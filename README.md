@@ -113,17 +113,17 @@ The JSON structure includes:
 - .NET 9.0 SDK or later
 
 ### Build
-```bash
+```cmd
 dotnet build
 ```
 
 ### Run Tests
-```bash
+```cmd
 dotnet test
 ```
 
 ### Run the Server
-```bash
+```cmd
 cd src/NotebookMcpServer
 dotnet run
 ```
@@ -158,12 +158,9 @@ The server can be configured in several ways:
 }
 ```
 
-### Docker
-```bash
-docker run -d \
-  -e NOTEBOOK_STORAGE_DIRECTORY=/data/notebooks \
-  -v /host/notebooks:/data/notebooks \
-  ghcr.io/dimonsmart/notebook-mcp-server:latest
+### Docker (Windows)
+```cmd
+docker run -d -e NOTEBOOK_STORAGE_DIRECTORY=C:\data\notebooks -v C:\host\notebooks:C:\data\notebooks ghcr.io/dimonsmart/notebook-mcp-server:latest
 ```
 
 ## Release and Deployment
@@ -172,39 +169,26 @@ docker run -d \
 Download the latest release from [GitHub Releases](https://github.com/DimonSmart/NotebookMcpServer/releases):
 
 - **Windows x64**: `NotebookMcpServer-win-x64.zip`
-- **Linux x64**: `NotebookMcpServer-linux-x64.tar.gz`  
-- **Linux ARM64**: `NotebookMcpServer-linux-arm64.tar.gz`
-- **macOS x64**: `NotebookMcpServer-osx-x64.tar.gz`
-- **macOS ARM64**: `NotebookMcpServer-osx-arm64.tar.gz`
 
 ### Manual Build and Publish
 
 #### Build for Development
-```bash
+```cmd
 dotnet build --configuration Release
 ```
 
-#### Publish Self-Contained Executables
-```bash
-# Windows x64
+#### Publish Self-Contained Executable (Windows x64)
+```cmd
 dotnet publish src/NotebookMcpServer/NotebookMcpServer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish/win-x64
-
-# Linux x64
-dotnet publish src/NotebookMcpServer/NotebookMcpServer.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o publish/linux-x64
-
-# macOS x64
-dotnet publish src/NotebookMcpServer/NotebookMcpServer.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -o publish/osx-x64
 ```
 
-#### Docker Build
-```bash
+#### Docker Build (Windows)
+```cmd
 # Build locally
 docker build -t notebook-mcp-server .
 
 # Run with volume mapping
-docker run -it --rm \
-  -v $(pwd)/notebooks:/app/notebooks \
-  notebook-mcp-server
+docker run -it --rm -v %cd%/notebooks:/app/notebooks notebook-mcp-server
 ```
 
 ### CI/CD Pipeline
@@ -227,20 +211,11 @@ To create a new release:
 NotebookMcpServer.exe
 ```
 
-#### Linux/macOS
-```bash
-# Extract the tar.gz file
-tar -xzf NotebookMcpServer-linux-x64.tar.gz
-cd NotebookMcpServer-linux-x64
-chmod +x NotebookMcpServer
-./NotebookMcpServer
-```
-
 #### Configuration with Published Binaries
 Set environment variables before running:
-```bash
-export NOTEBOOK_STORAGE_DIRECTORY=/path/to/notebooks
-./NotebookMcpServer
+```cmd
+set NOTEBOOK_STORAGE_DIRECTORY=C:\path\to\notebooks
+NotebookMcpServer.exe
 ```
 
 Or create `appsettings.json` in the same directory as the executable.
@@ -262,7 +237,7 @@ The project includes comprehensive unit tests using xUnit:
 - Error condition validation
 
 Run tests with:
-```bash
+```cmd
 dotnet test --verbosity normal
 ```
 

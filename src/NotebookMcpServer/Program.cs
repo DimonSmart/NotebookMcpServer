@@ -1,5 +1,6 @@
 namespace NotebookMcpServer;
 
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,6 +21,40 @@ internal sealed class Program
     /// <returns>A task representing the asynchronous operation.</returns>
     private static async Task Main(string[] args)
     {
+        // Handle --version or -v
+        if (args.Any(a => a is "--version" or "-v"))
+        {
+            var asm = Assembly.GetExecutingAssembly();
+            var versionInfo =
+                asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                ?? asm.GetName().Version?.ToString()
+                ?? "unknown";
+
+            Console.WriteLine($"NotebookMcpServer {versionInfo}");
+            return;
+        }
+
+        // Handle --help or -h
+        if (args.Any(a => a is "--help" or "-h"))
+        {
+            Console.WriteLine("Notebook MCP Server");
+            Console.WriteLine();
+            Console.WriteLine("A Model Context Protocol (MCP) server for managing key-value notebooks with persistent file storage.");
+            Console.WriteLine();
+            Console.WriteLine("Usage:");
+            Console.WriteLine("  NotebookMcpServer [options]");
+            Console.WriteLine();
+            Console.WriteLine("Options:");
+            Console.WriteLine("  --version, -v    Show version information");
+            Console.WriteLine("  --help, -h       Show this help message");
+            Console.WriteLine();
+            Console.WriteLine("Configuration:");
+            Console.WriteLine("  NOTEBOOK_STORAGE_DIRECTORY    Directory for storing notebook files (default: ./notebooks)");
+            Console.WriteLine();
+            Console.WriteLine("The server listens on stdin/stdout for MCP protocol messages.");
+            return;
+        }
+
         Console.WriteLine("Starting Notebook MCP Server...");
 
         var host = Host.CreateDefaultBuilder(args)
@@ -54,7 +89,7 @@ internal sealed class Program
         services.AddSingleton<INotebookStorageService>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileNotebookStorageService>>();
-            return new FileNotebookStorageService(storageDir, logger);
+            return new FileNotebookStorageService(logger);
         });
 
         // Register business logic service

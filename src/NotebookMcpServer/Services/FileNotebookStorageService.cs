@@ -1,31 +1,31 @@
 using Microsoft.Extensions.Logging;
 using NotebookMcpServer.Interfaces;
 using NotebookMcpServer.Models;
-using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace NotebookMcpServer.Services;
 
 /// <summary>
-/// File-based storage with thread-safe access per notebook using semaphores.
+/// File-based storage with thread-safe access using a single global semaphore for simplicity.
+/// Writes directly to files without temporary files since this is a local server.
 /// </summary>
 public class FileNotebookStorageService : INotebookStorageService, IDisposable
 {
     private readonly string _baseDirectory;
     private readonly ILogger<FileNotebookStorageService> _logger;
-    private static JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _notebookSemaphores;
+    private readonly SemaphoreSlim _globalSemaphore;
     private volatile bool _disposed;
 
     public FileNotebookStorageService(ILogger<FileNotebookStorageService> logger)
     {
         _logger = logger;
         _baseDirectory = Path.Combine(AppContext.BaseDirectory, "notebooks");
-        _notebookSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
+        _globalSemaphore = new SemaphoreSlim(1, 1);
 
         Directory.CreateDirectory(_baseDirectory);
     }
@@ -36,19 +36,15 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
         return Path.Combine(_baseDirectory, $"{safeNotebookName}.json");
     }
 
-    private SemaphoreSlim GetSemaphore(string notebookName)
-    {
-        return _notebookSemaphores.GetOrAdd(notebookName, _ => new SemaphoreSlim(1, 1));
-    }
+
 
     public async Task<Notebook?> LoadNotebookAsync(string notebookName, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        var semaphore = GetSemaphore(notebookName);
         var filePath = GetNotebookFilePath(notebookName);
 
-        await semaphore.WaitAsync(cancellationToken);
+        await _globalSemaphore.WaitAsync(cancellationToken);
         try
         {
             if (!File.Exists(filePath))
@@ -75,7 +71,7 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
         }
         finally
         {
-            semaphore.Release();
+            _globalSemaphore.Release();
         }
     }
 
@@ -83,10 +79,9 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        var semaphore = GetSemaphore(notebook.Name);
         var filePath = GetNotebookFilePath(notebook.Name);
 
-        await semaphore.WaitAsync(cancellationToken);
+        await _globalSemaphore.WaitAsync(cancellationToken);
         try
         {
             _logger.LogDebug("Saving notebook '{NotebookName}' to: {FilePath}", notebook.Name, filePath);
@@ -99,13 +94,9 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
                 Directory.CreateDirectory(directory);
             }
 
-            var tempFilePath = filePath + ".tmp";
-
-            await using var stream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write);
+            await using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
             await JsonSerializer.SerializeAsync(stream, notebookToSave, JsonOptions, cancellationToken);
             await stream.FlushAsync(cancellationToken);
-
-            File.Move(tempFilePath, filePath, true);
 
             _logger.LogDebug(
                 "Successfully saved notebook '{NotebookName}' with {EntryCount} entries",
@@ -118,7 +109,7 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
         }
         finally
         {
-            semaphore.Release();
+            _globalSemaphore.Release();
         }
     }
 
@@ -137,12 +128,7 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
             return;
         }
 
-        foreach (var semaphore in _notebookSemaphores.Values)
-        {
-            semaphore.Dispose();
-        }
-
-        _notebookSemaphores.Clear();
+        _globalSemaphore.Dispose();
         _disposed = true;
         GC.SuppressFinalize(this);
     }

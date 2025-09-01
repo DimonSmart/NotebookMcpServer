@@ -1,8 +1,8 @@
-using System.Collections.Concurrent;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using NotebookMcpServer.Interfaces;
 using NotebookMcpServer.Models;
+using System.Collections.Concurrent;
+using System.Text.Json;
 
 namespace NotebookMcpServer.Services;
 
@@ -11,40 +11,39 @@ namespace NotebookMcpServer.Services;
 /// </summary>
 public class FileNotebookStorageService : INotebookStorageService, IDisposable
 {
-    private readonly string baseDirectory;
-    private readonly ILogger<FileNotebookStorageService> logger;
-    private readonly JsonSerializerOptions jsonOptions;
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> notebookSemaphores;
-    private volatile bool disposed;
+    private readonly string _baseDirectory;
+    private readonly ILogger<FileNotebookStorageService> _logger;
+    private static JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _notebookSemaphores;
+    private volatile bool _disposed;
 
     public FileNotebookStorageService(ILogger<FileNotebookStorageService> logger)
     {
-        this.logger = logger;
-        baseDirectory = Path.Combine(AppContext.BaseDirectory, "notebooks");
-        jsonOptions = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
-        notebookSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
+        _logger = logger;
+        _baseDirectory = Path.Combine(AppContext.BaseDirectory, "notebooks");
+        _notebookSemaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
 
-        Directory.CreateDirectory(baseDirectory);
+        Directory.CreateDirectory(_baseDirectory);
     }
 
     private string GetNotebookFilePath(string notebookName)
     {
         var safeNotebookName = string.Join("_", notebookName.Split(Path.GetInvalidFileNameChars()));
-        return Path.Combine(baseDirectory, $"{safeNotebookName}.json");
+        return Path.Combine(_baseDirectory, $"{safeNotebookName}.json");
     }
 
     private SemaphoreSlim GetSemaphore(string notebookName)
     {
-        return notebookSemaphores.GetOrAdd(notebookName, _ => new SemaphoreSlim(1, 1));
+        return _notebookSemaphores.GetOrAdd(notebookName, _ => new SemaphoreSlim(1, 1));
     }
 
     public async Task<Notebook?> LoadNotebookAsync(string notebookName, CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(disposed, this);
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         var semaphore = GetSemaphore(notebookName);
         var filePath = GetNotebookFilePath(notebookName);
@@ -54,16 +53,16 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
         {
             if (!File.Exists(filePath))
             {
-                logger.LogDebug("Notebook file does not exist: {FilePath}", filePath);
+                _logger.LogDebug("Notebook file does not exist: {FilePath}", filePath);
                 return null;
             }
 
-            logger.LogDebug("Loading notebook from: {FilePath}", filePath);
+            _logger.LogDebug("Loading notebook from: {FilePath}", filePath);
 
             await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var notebook = await JsonSerializer.DeserializeAsync<Notebook>(stream, jsonOptions, cancellationToken);
+            var notebook = await JsonSerializer.DeserializeAsync<Notebook>(stream, JsonOptions, cancellationToken);
 
-            logger.LogDebug(
+            _logger.LogDebug(
                 "Successfully loaded notebook '{NotebookName}' with {EntryCount} entries",
                 notebookName, notebook?.Entries.Count ?? 0);
 
@@ -71,7 +70,7 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to load notebook '{NotebookName}' from {FilePath}", notebookName, filePath);
+            _logger.LogError(ex, "Failed to load notebook '{NotebookName}' from {FilePath}", notebookName, filePath);
             throw;
         }
         finally
@@ -82,7 +81,7 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
 
     public async Task SaveNotebookAsync(Notebook notebook, CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(disposed, this);
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         var semaphore = GetSemaphore(notebook.Name);
         var filePath = GetNotebookFilePath(notebook.Name);
@@ -90,7 +89,7 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
         await semaphore.WaitAsync(cancellationToken);
         try
         {
-            logger.LogDebug("Saving notebook '{NotebookName}' to: {FilePath}", notebook.Name, filePath);
+            _logger.LogDebug("Saving notebook '{NotebookName}' to: {FilePath}", notebook.Name, filePath);
 
             var notebookToSave = notebook with { ModifiedAt = DateTime.UtcNow };
 
@@ -103,18 +102,18 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
             var tempFilePath = filePath + ".tmp";
 
             await using var stream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write);
-            await JsonSerializer.SerializeAsync(stream, notebookToSave, jsonOptions, cancellationToken);
+            await JsonSerializer.SerializeAsync(stream, notebookToSave, JsonOptions, cancellationToken);
             await stream.FlushAsync(cancellationToken);
 
             File.Move(tempFilePath, filePath, true);
 
-            logger.LogDebug(
+            _logger.LogDebug(
                 "Successfully saved notebook '{NotebookName}' with {EntryCount} entries",
                 notebook.Name, notebook.Entries.Count);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to save notebook '{NotebookName}' to {FilePath}", notebook.Name, filePath);
+            _logger.LogError(ex, "Failed to save notebook '{NotebookName}' to {FilePath}", notebook.Name, filePath);
             throw;
         }
         finally
@@ -125,7 +124,7 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
 
     public async Task<bool> NotebookExistsAsync(string notebookName, CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(disposed, this);
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         var filePath = GetNotebookFilePath(notebookName);
         return await Task.FromResult(File.Exists(filePath));
@@ -133,18 +132,18 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
 
     public void Dispose()
     {
-        if (disposed)
+        if (_disposed)
         {
             return;
         }
 
-        foreach (var semaphore in notebookSemaphores.Values)
+        foreach (var semaphore in _notebookSemaphores.Values)
         {
             semaphore.Dispose();
         }
 
-        notebookSemaphores.Clear();
-        disposed = true;
+        _notebookSemaphores.Clear();
+        _disposed = true;
         GC.SuppressFinalize(this);
     }
 }

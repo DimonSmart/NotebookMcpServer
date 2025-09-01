@@ -14,14 +14,14 @@ public class NotebookTools
 
     public NotebookTools(INotebookService notebookService)
     {
-        this._notebookService = notebookService;
+        _notebookService = notebookService;
     }
 
     [McpServerTool(Name = "view_notebook")]
     public async Task<Dictionary<string, string>> ViewNotebookAsync(
         [Description("Name of the notebook to view")] string notebookName)
     {
-        return await this._notebookService.ViewNotebookAsync(notebookName);
+        return await _notebookService.ViewNotebookAsync(notebookName);
     }
 
     [McpServerTool(Name = "write_entry")]
@@ -30,7 +30,7 @@ public class NotebookTools
         [Description("The key to store/update")] string key,
         [Description("The value to store")] string value)
     {
-        await this._notebookService.WriteEntryAsync(notebookName, key, value);
+        await _notebookService.WriteEntryAsync(notebookName, key, value);
         return $"Successfully wrote entry '{key}' to notebook '{notebookName}'";
     }
 
@@ -39,6 +39,6 @@ public class NotebookTools
         [Description("Name of the notebook")] string notebookName,
         [Description("The key to delete")] string key)
     {
-        return await this._notebookService.DeleteEntryAsync(notebookName, key);
+        return await _notebookService.DeleteEntryAsync(notebookName, key);
     }
 }

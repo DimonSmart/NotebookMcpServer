@@ -136,6 +136,115 @@ The server can be configured by modifying the DI container registration in `Prog
 - Storage directory: `./notebooks`
 - Logging: Console output
 
+## Configuration
+
+The server can be configured in several ways:
+
+### Environment Variables
+- `NOTEBOOK_STORAGE_DIRECTORY`: Directory for storing notebook files (default: `./notebooks`)
+
+### Configuration File (`appsettings.json`)
+```json
+{
+  "Storage": {
+    "Directory": "./notebooks"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "NotebookMcpServer": "Debug"
+    }
+  }
+}
+```
+
+### Docker
+```bash
+docker run -d \
+  -e NOTEBOOK_STORAGE_DIRECTORY=/data/notebooks \
+  -v /host/notebooks:/data/notebooks \
+  ghcr.io/dimonsmart/notebook-mcp-server:latest
+```
+
+## Release and Deployment
+
+### Pre-built Binaries
+Download the latest release from [GitHub Releases](https://github.com/DimonSmart/NotebookMcpServer/releases):
+
+- **Windows x64**: `NotebookMcpServer-win-x64.zip`
+- **Linux x64**: `NotebookMcpServer-linux-x64.tar.gz`  
+- **Linux ARM64**: `NotebookMcpServer-linux-arm64.tar.gz`
+- **macOS x64**: `NotebookMcpServer-osx-x64.tar.gz`
+- **macOS ARM64**: `NotebookMcpServer-osx-arm64.tar.gz`
+
+### Manual Build and Publish
+
+#### Build for Development
+```bash
+dotnet build --configuration Release
+```
+
+#### Publish Self-Contained Executables
+```bash
+# Windows x64
+dotnet publish src/NotebookMcpServer/NotebookMcpServer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish/win-x64
+
+# Linux x64
+dotnet publish src/NotebookMcpServer/NotebookMcpServer.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o publish/linux-x64
+
+# macOS x64
+dotnet publish src/NotebookMcpServer/NotebookMcpServer.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -o publish/osx-x64
+```
+
+#### Docker Build
+```bash
+# Build locally
+docker build -t notebook-mcp-server .
+
+# Run with volume mapping
+docker run -it --rm \
+  -v $(pwd)/notebooks:/app/notebooks \
+  notebook-mcp-server
+```
+
+### CI/CD Pipeline
+The project includes a GitHub Actions workflow that automatically:
+- Builds and tests on every push and PR
+- Creates release artifacts for all platforms on tags
+- Publishes Docker images to GitHub Container Registry
+- Creates GitHub releases with downloadable binaries
+
+To create a new release:
+1. Tag your commit: `git tag v1.0.0`
+2. Push the tag: `git push origin v1.0.0`
+3. GitHub Actions will automatically create the release
+
+### Running Published Binaries
+
+#### Windows
+```cmd
+# Extract NotebookMcpServer-win-x64.zip
+NotebookMcpServer.exe
+```
+
+#### Linux/macOS
+```bash
+# Extract the tar.gz file
+tar -xzf NotebookMcpServer-linux-x64.tar.gz
+cd NotebookMcpServer-linux-x64
+chmod +x NotebookMcpServer
+./NotebookMcpServer
+```
+
+#### Configuration with Published Binaries
+Set environment variables before running:
+```bash
+export NOTEBOOK_STORAGE_DIRECTORY=/path/to/notebooks
+./NotebookMcpServer
+```
+
+Or create `appsettings.json` in the same directory as the executable.
+
 ## Dependencies
 
 - **MCPSharp** (v1.0.11): Modern Model Context Protocol implementation with attribute-based API

@@ -1,5 +1,6 @@
 namespace NotebookMcpServer;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -22,20 +23,39 @@ internal sealed class Program
         Console.WriteLine("Starting Notebook MCP Server...");
 
         var host = Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((ctx, cfg) =>
+            {
+                cfg.AddEnvironmentVariables(prefix: "NOTEBOOK_");
+            })
             .ConfigureServices(ConfigureServices)
             .Build();
+
+        // Log version and startup info
+        var logger = host.Services.GetRequiredService<ILogger<Program>>();
+        var version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown";
+        logger.LogInformation("Notebook MCP Server version {Version} started", version);
 
         await host.RunAsync();
     }
 
-
-    private static void ConfigureServices(IServiceCollection services)
+    private static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
+        var configuration = context.Configuration;
+        
+        // Get storage directory from configuration or environment variable
+        var storageDir = configuration["Storage:Directory"] ??
+                         Environment.GetEnvironmentVariable("NOTEBOOK_STORAGE_DIRECTORY") ??
+                         Path.Combine(AppContext.BaseDirectory, "notebooks");
+
         // Configure logging
         services.AddLogging(builder => builder.AddConsole());
 
-        // Register storage service
-        services.AddSingleton<INotebookStorageService, FileNotebookStorageService>();
+        // Register storage service with configurable directory
+        services.AddSingleton<INotebookStorageService>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<FileNotebookStorageService>>();
+            return new FileNotebookStorageService(storageDir, logger);
+        });
 
         // Register business logic service
         services.AddSingleton<INotebookService, NotebookService>();

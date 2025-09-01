@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Version>$(VersionPrefix)$(VersionSuffix)</Version>
+    <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
+    <FileVersion>$(VersionPrefix).0</FileVersion>
+    <InformationalVersion>$(VersionPrefix)$(VersionSuffix)</InformationalVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Company>DimonSmart</Company>
+    <Product>NotebookMcpServer</Product>
+    <Description>MCP server provide llm with local notebook.</Description>
+    <Copyright>© 2025 DimonSmart</Copyright>
+  </PropertyGroup>
+
+</Project>

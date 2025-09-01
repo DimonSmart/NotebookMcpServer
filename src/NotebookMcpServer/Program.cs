@@ -1,46 +1,48 @@
-using NotebookMcpServer;
+namespace NotebookMcpServer;
 
-var dataPath = Path.Combine(AppContext.BaseDirectory, "notebooks.json");
-var service = new NotebookService(dataPath);
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NotebookMcpServer.Interfaces;
+using NotebookMcpServer.Services;
+using NotebookMcpServer.Tools;
 
-if (args.Length == 0)
+/// <summary>
+/// Main program class for the Notebook MCP Server.
+/// </summary>
+internal sealed class Program
 {
-    Console.WriteLine("Usage: view <notebook> | write <notebook> <key> [value] | delete <notebook> <key>");
-    return;
-}
+    /// <summary>
+    /// Entry point for the application.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    private static async Task Main(string[] args)
+    {
+        Console.WriteLine("Starting Notebook MCP Server...");
 
-switch (args[0].ToLowerInvariant())
-{
-    case "view":
-        if (args.Length < 2)
-        {
-            Console.WriteLine("Notebook name required");
-            return;
-        }
-        var entries = await service.ViewAsync(args[1]);
-        foreach (var pair in entries)
-        {
-            Console.WriteLine($"{pair.Key}={pair.Value}");
-        }
-        break;
-    case "write":
-        if (args.Length < 3)
-        {
-            Console.WriteLine("Notebook name and key required");
-            return;
-        }
-        var value = args.Length > 3 ? args[3] : string.Empty;
-        await service.WriteAsync(args[1], args[2], value);
-        break;
-    case "delete":
-        if (args.Length < 3)
-        {
-            Console.WriteLine("Notebook name and key required");
-            return;
-        }
-        await service.DeleteAsync(args[1], args[2]);
-        break;
-    default:
-        Console.WriteLine("Unknown command");
-        break;
+        var host = Host.CreateDefaultBuilder(args)
+            .ConfigureServices(ConfigureServices)
+            .Build();
+
+        await host.RunAsync();
+    }
+
+
+    private static void ConfigureServices(IServiceCollection services)
+    {
+        // Configure logging
+        services.AddLogging(builder => builder.AddConsole());
+
+        // Register storage service
+        services.AddSingleton<INotebookStorageService, FileNotebookStorageService>();
+
+        // Register business logic service
+        services.AddSingleton<INotebookService, NotebookService>();
+
+        // Configure MCP server
+        services.AddMcpServer()
+        .WithTools([typeof(NotebookTools)])
+        .WithStdioServerTransport();
+    }
 }

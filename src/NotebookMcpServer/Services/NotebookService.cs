@@ -41,6 +41,30 @@ public class NotebookService : INotebookService
         return result;
     }
 
+    public async Task<string> GetEntryAsync(string notebookName, string key, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(notebookName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        _logger.LogInformation("Reading entry '{Key}' from notebook '{NotebookName}'", key, notebookName);
+
+        var notebook = await _storageService.LoadNotebookAsync(notebookName, cancellationToken);
+
+        if (notebook == null)
+        {
+            _logger.LogInformation("Notebook '{NotebookName}' not found, returning empty value for '{Key}'", notebookName, key);
+            return string.Empty;
+        }
+
+        if (!notebook.Entries.TryGetValue(key, out var entry))
+        {
+            _logger.LogInformation("Entry '{Key}' not found in notebook '{NotebookName}', returning empty value", key, notebookName);
+            return string.Empty;
+        }
+
+        return entry.Value;
+    }
+
     public async Task WriteEntryAsync(string notebookName, string key, string value, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(notebookName);

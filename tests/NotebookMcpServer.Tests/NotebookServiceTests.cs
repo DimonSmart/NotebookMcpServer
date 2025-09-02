@@ -34,6 +34,40 @@ public class NotebookServiceTests
     }
 
     [Fact]
+    public async Task GetEntryAsync_NonexistentNotebook_ReturnsEmptyString()
+    {
+        var (_, notebookService) = CreateServices();
+
+        var result = await notebookService.GetEntryAsync("missing", "key");
+
+        Assert.Equal(string.Empty, result);
+    }
+
+    [Fact]
+    public async Task GetEntryAsync_NonexistentKey_ReturnsEmptyString()
+    {
+        var (_, notebookService) = CreateServices();
+
+        await notebookService.WriteEntryAsync("book", "existing", "value");
+
+        var result = await notebookService.GetEntryAsync("book", "missing");
+
+        Assert.Equal(string.Empty, result);
+    }
+
+    [Fact]
+    public async Task GetEntryAsync_ExistingEntry_ReturnsValue()
+    {
+        var (_, notebookService) = CreateServices();
+
+        await notebookService.WriteEntryAsync("book", "key", "value");
+
+        var result = await notebookService.GetEntryAsync("book", "key");
+
+        Assert.Equal("value", result);
+    }
+
+    [Fact]
     public async Task WriteEntryAsync_NewNotebook_CreatesNotebookAndEntry()
     {
         var (storageService, notebookService) = CreateServices();

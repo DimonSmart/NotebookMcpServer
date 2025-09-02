@@ -72,13 +72,17 @@ public class NotebookMcpServerIntegrationTests : IDisposable
 
         // 2. Write first entry
         string writeResult1 = await _notebookTools.UpsertEntryAsync(notebookName, testKey1, testValue1);
-        Assert.Contains("Successfully wrote entry", writeResult1);
+        Assert.Contains("has been upserted", writeResult1);
         Assert.Contains(testKey1, writeResult1);
         Assert.Contains(notebookName, writeResult1);
 
+        // 2a. Read first entry
+        string readValue1 = await _notebookTools.GetEntryAsync(notebookName, testKey1);
+        Assert.Equal(testValue1, readValue1);
+
         // 3. Write second entry
         string writeResult2 = await _notebookTools.UpsertEntryAsync(notebookName, testKey2, testValue2);
-        Assert.Contains("Successfully wrote entry", writeResult2);
+        Assert.Contains("has been upserted", writeResult2);
 
         // Act & Assert: READ operations
 
@@ -93,7 +97,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
 
         // 5. Update existing entry
         string updateResult = await _notebookTools.UpsertEntryAsync(notebookName, testKey1, updatedValue1);
-        Assert.Contains("Successfully wrote entry", updateResult);
+        Assert.Contains("has been upserted", updateResult);
 
         // 6. Verify update
         Dictionary<string, string> updatedNotebook = await _notebookTools.GetNotebookEntriesAsync(notebookName);
@@ -112,6 +116,10 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         Assert.Single(notebookAfterDelete);
         Assert.Equal(updatedValue1, notebookAfterDelete[testKey1]);
         Assert.False(notebookAfterDelete.ContainsKey(testKey2));
+
+        // 8a. Reading deleted entry returns empty
+        string deletedValue = await _notebookTools.GetEntryAsync(notebookName, testKey2);
+        Assert.Equal(string.Empty, deletedValue);
 
         // 9. Try to delete non-existent entry
         bool deleteNonExistentResult = await _notebookTools.RemoveEntryAsync(notebookName, "non-existent-key");
@@ -225,7 +233,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         foreach ((string key, string value) in specialTestCases)
         {
             string writeResult = await _notebookTools.UpsertEntryAsync(notebookName, key, value);
-            Assert.Contains("Successfully wrote entry", writeResult);
+            Assert.Contains("has been upserted", writeResult);
         }
 
         Dictionary<string, string> notebookData = await _notebookTools.GetNotebookEntriesAsync(notebookName);

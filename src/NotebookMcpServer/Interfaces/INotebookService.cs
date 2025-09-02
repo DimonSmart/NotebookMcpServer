@@ -14,6 +14,15 @@ public interface INotebookService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Dictionary of all entries in the notebook</returns>
     Task<Dictionary<string, string>> ViewNotebookAsync(string notebookName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get a single entry's value from a notebook
+    /// </summary>
+    /// <param name="notebookName">Name of the notebook</param>
+    /// <param name="key">Entry key</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Entry value or empty string if not found</returns>
+    Task<string> GetEntryAsync(string notebookName, string key, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Write or update an entry in a notebook

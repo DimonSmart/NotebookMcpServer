@@ -10,9 +10,9 @@ namespace NotebookMcpServer.Tools;
 /// </summary>
 [McpServerToolType]
 [Description("Tools for viewing, upserting, and deleting string key/value entries in named notebooks.")]
-public class NotebookTools
-{
-    private readonly INotebookService _notebookService;
+    public class NotebookTools
+    {
+        private readonly INotebookService _notebookService;
 
     public NotebookTools(INotebookService notebookService)
     {
@@ -26,17 +26,44 @@ public class NotebookTools
     /// <returns>A dictionary of current entries in the notebook.</returns>
     [McpServerTool(Name = "get_notebook_entries")]
     [Description("List all key/value entries in the specified notebook. Example: { \"notebookName\": \"spanish\" }")]
-    public async Task<Dictionary<string, string>> GetNotebookEntriesAsync(
-        [Description("Exact name of the notebook to read (case‑sensitive, non-empty).")]
-        string notebookName)
-    {
-        if (string.IsNullOrWhiteSpace(notebookName))
+        public async Task<Dictionary<string, string>> GetNotebookEntriesAsync(
+            [Description("Exact name of the notebook to read (case‑sensitive, non-empty).")]
+            string notebookName)
         {
-            throw new ArgumentException("Notebook name must be a non-empty string.", nameof(notebookName));
+            if (string.IsNullOrWhiteSpace(notebookName))
+            {
+                throw new ArgumentException("Notebook name must be a non-empty string.", nameof(notebookName));
+            }
+
+            return await _notebookService.ViewNotebookAsync(notebookName);
         }
 
-        return await _notebookService.ViewNotebookAsync(notebookName);
-    }
+        /// <summary>
+        /// Returns the value of a single entry from the specified notebook.
+        /// </summary>
+        /// <param name="notebookName">Exact name of the target notebook (case‑sensitive, non-empty).</param>
+        /// <param name="key">Key to read (non-empty).</param>
+        /// <returns>Value of the entry or an empty string if not found.</returns>
+        [McpServerTool(Name = "get_entry")]
+        [Description("Read a single key from a notebook. Example: { \"notebookName\": \"spanish\", \"key\": \"hola\" }")]
+        public async Task<string> GetEntryAsync(
+            [Description("Exact name of the notebook to read (case‑sensitive, non-empty).")]
+            string notebookName,
+            [Description("Key to read from the notebook (non-empty string).")]
+            string key)
+        {
+            if (string.IsNullOrWhiteSpace(notebookName))
+            {
+                throw new ArgumentException("Notebook name must be a non-empty string.", nameof(notebookName));
+            }
+
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new ArgumentException("Key must be a non-empty string.", nameof(key));
+            }
+
+            return await _notebookService.GetEntryAsync(notebookName, key);
+        }
 
     /// <summary>
     /// Creates or overwrites a single entry (key → value) in the specified notebook.

@@ -8,12 +8,12 @@ namespace NotebookMcpServer.Interfaces;
 public interface INotebookService
 {
     /// <summary>
-    /// Get all pages from a notebook
+    /// Get notebook description and page titles
     /// </summary>
     /// <param name="notebookName">Name of the notebook</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Dictionary of all pages in the notebook</returns>
-    Task<Dictionary<string, string>> ViewNotebookAsync(string notebookName, CancellationToken cancellationToken = default);
+    /// <returns>Notebook summary</returns>
+    Task<NotebookSummary> ViewNotebookAsync(string notebookName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get text of a single page from a notebook

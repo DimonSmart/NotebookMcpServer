@@ -8,6 +8,8 @@ using NotebookMcpServer.Interfaces;
 using NotebookMcpServer.Services;
 using NotebookMcpServer.Tools;
 using System.Reflection;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
 /// <summary>
 /// Main program class for the Notebook MCP Server.
@@ -95,9 +97,13 @@ internal sealed class Program
         // Register business logic service
         services.AddSingleton<INotebookService, NotebookService>();
 
-        // Configure MCP server
+        var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        };
+
         services.AddMcpServer()
-        .WithTools([typeof(NotebookTools)])
+        .WithTools([typeof(NotebookTools)], jsonOptions)
         .WithStdioServerTransport();
     }
 }

@@ -10,6 +10,7 @@ using NotebookMcpServer.Tools;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 /// <summary>
 /// Main program class for the Notebook MCP Server.
@@ -100,6 +101,7 @@ internal sealed class Program
         var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
 
         services.AddMcpServer()

@@ -34,7 +34,8 @@ public class NotebookService : INotebookService
 
         var result = notebook.Pages.ToDictionary(
             kvp => kvp.Key,
-            kvp => kvp.Value.Text
+            kvp => kvp.Value.Text,
+            StringComparer.OrdinalIgnoreCase
         );
 
         _logger.LogInformation("Notebook '{NotebookName}' contains {PageCount} pages", notebookName, result.Count);

@@ -39,7 +39,7 @@ internal sealed class Program
         {
             Console.WriteLine("Notebook MCP Server");
             Console.WriteLine();
-            Console.WriteLine("A Model Context Protocol (MCP) server for managing key-value notebooks with persistent file storage.");
+            Console.WriteLine("A Model Context Protocol (MCP) server for managing notebooks with pages of text and persistent file storage.");
             Console.WriteLine();
             Console.WriteLine("Usage:");
             Console.WriteLine("  NotebookMcpServer [options]");

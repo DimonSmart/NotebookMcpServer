@@ -1,14 +1,14 @@
 # Notebook MCP Server
 
-A Model Context Protocol (MCP) server for managing key-value notebooks with persistent file storage.
+A Model Context Protocol (MCP) server for managing notebooks with pages of text and persistent file storage.
 
 ## Overview
 
-This MCP server provides tools for creating, viewing, updating, and managing key-value notebooks. Each notebook is stored as a separate JSON file, with thread-safe operations and proper concurrency control.
+This MCP server provides tools for creating, viewing, updating, and managing notebooks that store page/text pairs. Each notebook is stored as a separate JSON file, with thread-safe operations and proper concurrency control.
 
 ## Features
 
-- **Key-Value Storage**: Store and retrieve key-value pairs in named notebooks
+- **Page Storage**: Store and retrieve pages with text in named notebooks
 - **Persistent Storage**: Data is stored in JSON files for persistence
 - **Thread-Safe Operations**: Uses semaphores for concurrent access protection
 - **Separate Files**: Each notebook is stored in its own JSON file
@@ -18,13 +18,13 @@ This MCP server provides tools for creating, viewing, updating, and managing key
 
 ## Available Tools
 
-### 1. View Notebook (`view_notebook`)
-Retrieves all key-value pairs from a notebook.
+### 1. Get Notebook Pages (`get_notebook_pages`)
+Retrieves all pages with their text from a notebook.
 
 **Parameters:**
 - `notebook_name` (string): Name of the notebook to view
 
-**Returns:** Dictionary of key-value pairs
+**Returns:** Dictionary of page-text pairs
 
 **Example:**
 ```json
@@ -33,13 +33,13 @@ Retrieves all key-value pairs from a notebook.
 }
 ```
 
-### 2. Write Entry (`write_entry`)
-Creates or updates a key-value pair in a notebook.
+### 2. Upsert Page (`upsert_page`)
+Creates or updates a page in a notebook.
 
 **Parameters:**
 - `notebook_name` (string): Name of the notebook
-- `key` (string): The key to store/update
-- `value` (string): The value to store
+- `page` (string): Page name to store/update
+- `text` (string): Text to store on the page
 
 **Returns:** Success confirmation
 
@@ -47,17 +47,17 @@ Creates or updates a key-value pair in a notebook.
 ```json
 {
   "notebook_name": "my-notebook",
-  "key": "important-note",
-  "value": "Remember to update documentation"
+  "page": "important-note",
+  "text": "Remember to update documentation"
 }
 ```
 
-### 3. Delete Entry (`delete_entry`)
-Deletes a specific key from a notebook.
+### 3. Remove Page (`remove_page`)
+Deletes a specific page from a notebook.
 
 **Parameters:**
 - `notebook_name` (string): Name of the notebook
-- `key` (string): The key to delete
+- `page` (string): The page to delete
 
 **Returns:** Boolean indicating success/failure
 
@@ -65,15 +65,15 @@ Deletes a specific key from a notebook.
 ```json
 {
   "notebook_name": "my-notebook",
-  "key": "obsolete-note"
+  "page": "obsolete-note"
 }
 ```
 
 ## Architecture
 
 ### Models
-- `NotebookEntry`: Represents a single key-value entry with timestamps
-- `Notebook`: Contains a collection of entries with metadata
+- `NotebookPage`: Represents a single page with text and timestamps
+  - `Notebook`: Contains a collection of pages with metadata
 
 ### Services
 - `INotebookStorageService`: Interface for storage operations
@@ -94,10 +94,10 @@ The JSON structure includes:
 ```json
 {
   "Name": "my-notebook",
-  "Entries": {
-    "key1": {
-      "Key": "key1",
-      "Value": "value1",
+  "Pages": {
+    "page1": {
+      "Page": "page1",
+      "Text": "text1",
       "CreatedAt": "2024-01-15T10:30:00Z",
       "ModifiedAt": "2024-01-15T10:30:00Z"
     }
@@ -260,9 +260,9 @@ The server uses semaphores to ensure thread-safe file operations:
 This server is designed to work with MCP-compatible clients. The client connects via stdio and can invoke the available tools to manage notebooks.
 
 Example workflow:
-1. Use `view_notebook` to check existing entries
-2. Use `write_entry` to add or update entries
-3. Use `delete_entry` to remove obsolete entries
+1. Use `get_notebook_pages` to check existing pages
+2. Use `upsert_page` to add or update pages
+3. Use `remove_page` to remove obsolete pages
 
 ## Contributing
 

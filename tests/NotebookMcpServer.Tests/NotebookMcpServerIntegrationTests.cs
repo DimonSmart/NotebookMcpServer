@@ -5,6 +5,7 @@ using NotebookMcpServer.Models;
 using NotebookMcpServer.Services;
 using NotebookMcpServer.Tools;
 using System.Collections.Concurrent;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace NotebookMcpServer.Tests;
@@ -247,6 +248,25 @@ public class NotebookMcpServerIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateNotebook_WithUnicodeDescription_ShouldPersistWithoutEscaping()
+    {
+        const string notebookName = "unicode-test";
+        const string description = "описание";
+        const string key = "ключ";
+        const string value = "значение";
+
+        await _notebookTools.CreateNotebookAsync(notebookName, description);
+        await _notebookTools.UpsertEntryAsync(notebookName, key, value);
+
+        var filePath = Path.Combine(_testStorageDirectory, $"{notebookName}.json");
+        var content = await File.ReadAllTextAsync(filePath);
+
+        Assert.Contains(description, content);
+        Assert.Contains(value, content);
+        Assert.DoesNotContain("\\u", content);
+    }
+
+    [Fact]
     public async Task ConcurrentOperations_ShouldBeSafe()
     {
         // Arrange
@@ -383,6 +403,7 @@ internal class TestFileNotebookStorageService : INotebookStorageService, IDispos
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
     private readonly SemaphoreSlim _globalSemaphore;
     private volatile bool _disposed;

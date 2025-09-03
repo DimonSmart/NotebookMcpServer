@@ -19,6 +19,24 @@ namespace NotebookMcpServer.Tools;
         _notebookService = notebookService;
     }
 
+    [McpServerTool(Name = "create_notebook")]
+    [Description("Create a notebook or update its description. Example: { \"notebookName\": \"spanish\", \"description\": \"Spanish vocabulary\" }")]
+    public async Task<string> CreateNotebookAsync(
+        [Description("Exact name of the notebook (case‑sensitive, non-empty).")]
+        string notebookName,
+        [Description("Description to store for the notebook.")]
+        string description)
+    {
+        if (string.IsNullOrWhiteSpace(notebookName))
+        {
+            throw new ArgumentException("Notebook name must be a non-empty string.", nameof(notebookName));
+        }
+
+        description ??= string.Empty;
+        await _notebookService.CreateNotebookAsync(notebookName, description);
+        return $"Notebook '{notebookName}' has been created or updated.";
+    }
+
     /// <summary>
     /// Returns all entries of the specified notebook as a dictionary (key → value).
     /// </summary>

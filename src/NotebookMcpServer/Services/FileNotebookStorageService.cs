@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using NotebookMcpServer.Interfaces;
 using NotebookMcpServer.Models;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace NotebookMcpServer.Services;
@@ -17,6 +18,7 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
     private readonly SemaphoreSlim _globalSemaphore;
     private volatile bool _disposed;

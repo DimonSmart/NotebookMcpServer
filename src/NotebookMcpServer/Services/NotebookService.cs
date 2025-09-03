@@ -123,4 +123,19 @@ public class NotebookService : INotebookService
         _logger.LogInformation("Successfully deleted entry '{Key}' from notebook '{NotebookName}'", key, notebookName);
         return true;
     }
+
+    public async Task CreateNotebookAsync(string notebookName, string description, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(notebookName);
+        description ??= string.Empty;
+
+        _logger.LogInformation("Creating or updating notebook '{NotebookName}'", notebookName);
+
+        var notebook = await _storageService.LoadNotebookAsync(notebookName, cancellationToken) ?? new Notebook { Name = notebookName };
+        notebook.Description = description;
+
+        await _storageService.SaveNotebookAsync(notebook, cancellationToken);
+
+        _logger.LogInformation("Notebook '{NotebookName}' saved with description", notebookName);
+    }
 }

@@ -208,6 +208,29 @@ public class NotebookServiceTests
     }
 
     [Fact]
+    public async Task CreateNotebookAsync_NewNotebook_SetsDescription()
+    {
+        var (storageService, notebookService) = CreateServices();
+
+        await notebookService.CreateNotebookAsync("book", "описание");
+
+        var notebook = await storageService.LoadNotebookAsync("book");
+        Assert.Equal("описание", notebook?.Description);
+    }
+
+    [Fact]
+    public async Task CreateNotebookAsync_ExistingNotebook_UpdatesDescription()
+    {
+        var (storageService, notebookService) = CreateServices();
+
+        await notebookService.CreateNotebookAsync("book", "first");
+        await notebookService.CreateNotebookAsync("book", "second");
+
+        var notebook = await storageService.LoadNotebookAsync("book");
+        Assert.Equal("second", notebook?.Description);
+    }
+
+    [Fact]
     public async Task WriteEntryAsync_NullNotebookName_ThrowsArgumentException()
     {
         var (storageService, notebookService) = CreateServices();

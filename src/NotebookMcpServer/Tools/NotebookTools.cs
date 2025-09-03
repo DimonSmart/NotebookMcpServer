@@ -39,13 +39,13 @@ public class NotebookTools
     }
 
     /// <summary>
-    /// Returns notebook description and page titles.
+    /// Returns notebook description and page names without page content.
     /// </summary>
     /// <param name="notebookName">Name of the target notebook (case-insensitive, non-empty).</param>
     /// <returns>Notebook summary.</returns>
-    [McpServerTool(Name = "get_notebook_pages")]
-    [Description("List notebook description and page titles.")]
-    public async Task<NotebookSummary> GetNotebookPagesAsync(
+    [McpServerTool(Name = "get_notebook_page_names")]
+    [Description("Get notebook description and page names without page text.")]
+    public async Task<NotebookSummary> GetNotebookPageNamesAsync(
             [Description("Name of the notebook to read (case-insensitive, non-empty).")]
             string notebookName)
     {

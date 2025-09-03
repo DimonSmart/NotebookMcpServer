@@ -18,13 +18,13 @@ This MCP server provides tools for creating, viewing, updating, and managing not
 
 ## Available Tools
 
-### 1. Get Notebook Pages (`get_notebook_pages`)
-Retrieves all pages with their text from a notebook.
+### 1. Get Notebook Page Names (`get_notebook_page_names`)
+Retrieves notebook description and page names without page text.
 
 **Parameters:**
 - `notebook_name` (string): Name of the notebook to view
 
-**Returns:** Dictionary of page-text pairs
+**Returns:** Notebook description and list of page names
 
 **Example:**
 ```json
@@ -260,7 +260,7 @@ The server uses semaphores to ensure thread-safe file operations:
 This server is designed to work with MCP-compatible clients. The client connects via stdio and can invoke the available tools to manage notebooks.
 
 Example workflow:
-1. Use `get_notebook_pages` to check existing pages
+1. Use `get_notebook_page_names` to check existing pages
 2. Use `upsert_page` to add or update pages
 3. Use `remove_page` to remove obsolete pages
 

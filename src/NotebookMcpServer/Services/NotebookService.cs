@@ -18,7 +18,7 @@ public class NotebookService : INotebookService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<Dictionary<string, string>> ViewNotebookAsync(string notebookName, CancellationToken cancellationToken = default)
+    public async Task<NotebookSummary> ViewNotebookAsync(string notebookName, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(notebookName);
 
@@ -29,17 +29,17 @@ public class NotebookService : INotebookService
         if (notebook == null)
         {
             _logger.LogInformation("Notebook '{NotebookName}' not found, returning empty result", notebookName);
-            return new Dictionary<string, string>();
+            return new NotebookSummary();
         }
 
-        var result = notebook.Pages.ToDictionary(
-            kvp => kvp.Key,
-            kvp => kvp.Value.Text,
-            StringComparer.OrdinalIgnoreCase
-        );
+        var pages = notebook.Pages.Keys.ToList();
 
-        _logger.LogInformation("Notebook '{NotebookName}' contains {PageCount} pages", notebookName, result.Count);
-        return result;
+        _logger.LogInformation("Notebook '{NotebookName}' contains {PageCount} pages", notebookName, pages.Count);
+        return new NotebookSummary
+        {
+            Description = notebook.Description,
+            Pages = pages
+        };
     }
 
     public async Task<string> GetPageAsync(string notebookName, string page, CancellationToken cancellationToken = default)

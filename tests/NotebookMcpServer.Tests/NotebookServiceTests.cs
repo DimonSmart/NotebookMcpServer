@@ -21,7 +21,7 @@ public class NotebookServiceTests
     }
 
     [Fact]
-    public async Task ViewNotebookAsync_NewNotebook_ReturnsEmptyDictionary()
+    public async Task ViewNotebookAsync_NewNotebook_ReturnsEmptySummary()
     {
         var (storageService, notebookService) = CreateServices();
 
@@ -30,7 +30,7 @@ public class NotebookServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Empty(result);
+        Assert.Empty(result.Pages);
     }
 
     [Fact]
@@ -81,9 +81,10 @@ public class NotebookServiceTests
         await notebookService.WritePageAsync(notebookName, page, text);
 
         // Assert
-        var result = await notebookService.ViewNotebookAsync(notebookName);
-        Assert.Single(result);
-        Assert.Equal(text, result[page]);
+        var summary = await notebookService.ViewNotebookAsync(notebookName);
+        Assert.Contains(page, summary.Pages);
+        var storedText = await notebookService.GetPageAsync(notebookName, page);
+        Assert.Equal(text, storedText);
     }
 
     [Fact]
@@ -102,9 +103,10 @@ public class NotebookServiceTests
         await notebookService.WritePageAsync(notebookName, page, updatedText);
 
         // Assert
-        var result = await notebookService.ViewNotebookAsync(notebookName);
-        Assert.Single(result);
-        Assert.Equal(updatedText, result[page]);
+        var summary = await notebookService.ViewNotebookAsync(notebookName);
+        Assert.Contains(page, summary.Pages);
+        var storedText = await notebookService.GetPageAsync(notebookName, page);
+        Assert.Equal(updatedText, storedText);
     }
 
     [Fact]
@@ -124,8 +126,8 @@ public class NotebookServiceTests
 
         // Assert
         Assert.True(result);
-        var pages = await notebookService.ViewNotebookAsync(notebookName);
-        Assert.Empty(pages);
+        var summary = await notebookService.ViewNotebookAsync(notebookName);
+        Assert.Empty(summary.Pages);
     }
 
     [Fact]
@@ -181,11 +183,13 @@ public class NotebookServiceTests
         }
 
         // Assert
-        var result = await notebookService.ViewNotebookAsync(notebookName);
-        Assert.Equal(pages.Count, result.Count);
+        var summary = await notebookService.ViewNotebookAsync(notebookName);
+        Assert.Equal(pages.Count, summary.Pages.Count);
         foreach (var (page, expectedText) in pages)
         {
-            Assert.Equal(expectedText, result[page]);
+            Assert.Contains(page, summary.Pages);
+            var text = await notebookService.GetPageAsync(notebookName, page);
+            Assert.Equal(expectedText, text);
         }
     }
 
@@ -269,9 +273,10 @@ public class NotebookServiceTests
         await notebookService.WritePageAsync(notebookName, page, null!);
 
         // Assert
-        var result = await notebookService.ViewNotebookAsync(notebookName);
-        Assert.Single(result);
-        Assert.Equal("", result[page]);
+        var summary = await notebookService.ViewNotebookAsync(notebookName);
+        Assert.Single(summary.Pages);
+        var text = await notebookService.GetPageAsync(notebookName, page);
+        Assert.Equal("", text);
     }
 
     [Fact]

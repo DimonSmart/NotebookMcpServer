@@ -1,5 +1,6 @@
-﻿using ModelContextProtocol.Server;
+using ModelContextProtocol.Server;
 using NotebookMcpServer.Interfaces;
+using NotebookMcpServer.Models;
 using System.ComponentModel;
 
 namespace NotebookMcpServer.Tools;
@@ -38,13 +39,13 @@ public class NotebookTools
     }
 
     /// <summary>
-    /// Returns all pages of the specified notebook as a dictionary (page → text).
+    /// Returns notebook description and page titles.
     /// </summary>
     /// <param name="notebookName">Name of the target notebook (case-insensitive, non-empty).</param>
-    /// <returns>A dictionary of current pages in the notebook.</returns>
+    /// <returns>Notebook summary.</returns>
     [McpServerTool(Name = "get_notebook_pages")]
-    [Description("List all pages in the specified notebook.")]
-    public async Task<Dictionary<string, string>> GetNotebookPagesAsync(
+    [Description("List notebook description and page titles.")]
+    public async Task<NotebookSummary> GetNotebookPagesAsync(
             [Description("Name of the notebook to read (case-insensitive, non-empty).")]
             string notebookName)
     {

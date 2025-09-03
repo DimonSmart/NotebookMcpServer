@@ -25,56 +25,56 @@ public class NotebookService : INotebookService
         _logger.LogInformation("Viewing notebook '{NotebookName}'", notebookName);
         
         var notebook = await _storageService.LoadNotebookAsync(notebookName, cancellationToken);
-        
+
         if (notebook == null)
         {
             _logger.LogInformation("Notebook '{NotebookName}' not found, returning empty result", notebookName);
             return new Dictionary<string, string>();
         }
 
-        var result = notebook.Entries.ToDictionary(
-            kvp => kvp.Key, 
-            kvp => kvp.Value.Value
+        var result = notebook.Pages.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.Text
         );
-        
-        _logger.LogInformation("Notebook '{NotebookName}' contains {EntryCount} entries", notebookName, result.Count);
+
+        _logger.LogInformation("Notebook '{NotebookName}' contains {PageCount} pages", notebookName, result.Count);
         return result;
     }
 
-    public async Task<string> GetEntryAsync(string notebookName, string key, CancellationToken cancellationToken = default)
+    public async Task<string> GetPageAsync(string notebookName, string page, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(notebookName);
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        ArgumentException.ThrowIfNullOrWhiteSpace(page);
 
-        _logger.LogInformation("Reading entry '{Key}' from notebook '{NotebookName}'", key, notebookName);
+        _logger.LogInformation("Reading page '{Page}' from notebook '{NotebookName}'", page, notebookName);
 
         var notebook = await _storageService.LoadNotebookAsync(notebookName, cancellationToken);
 
         if (notebook == null)
         {
-            _logger.LogInformation("Notebook '{NotebookName}' not found, returning empty value for '{Key}'", notebookName, key);
+            _logger.LogInformation("Notebook '{NotebookName}' not found, returning empty text for '{Page}'", notebookName, page);
             return string.Empty;
         }
 
-        if (!notebook.Entries.TryGetValue(key, out var entry))
+        if (!notebook.Pages.TryGetValue(page, out var pageEntry))
         {
-            _logger.LogInformation("Entry '{Key}' not found in notebook '{NotebookName}', returning empty value", key, notebookName);
+            _logger.LogInformation("Page '{Page}' not found in notebook '{NotebookName}', returning empty text", page, notebookName);
             return string.Empty;
         }
 
-        return entry.Value;
+        return pageEntry.Text;
     }
 
-    public async Task WriteEntryAsync(string notebookName, string key, string value, CancellationToken cancellationToken = default)
+    public async Task WritePageAsync(string notebookName, string page, string text, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(notebookName);
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        value ??= string.Empty;
-        
-        _logger.LogInformation("Writing entry '{Key}' to notebook '{NotebookName}'", key, notebookName);
-        
+        ArgumentException.ThrowIfNullOrWhiteSpace(page);
+        text ??= string.Empty;
+
+        _logger.LogInformation("Writing page '{Page}' to notebook '{NotebookName}'", page, notebookName);
+
         var notebook = await _storageService.LoadNotebookAsync(notebookName, cancellationToken);
-        
+
         if (notebook == null)
         {
             _logger.LogInformation("Creating new notebook '{NotebookName}'", notebookName);
@@ -82,45 +82,45 @@ public class NotebookService : INotebookService
         }
 
         var now = DateTime.UtcNow;
-        var entry = new NotebookEntry
+        var pageData = new NotebookPage
         {
-            Key = key,
-            Value = value,
-            CreatedAt = notebook.Entries.ContainsKey(key) ? notebook.Entries[key].CreatedAt : now,
+            Page = page,
+            Text = text,
+            CreatedAt = notebook.Pages.ContainsKey(page) ? notebook.Pages[page].CreatedAt : now,
             ModifiedAt = now
         };
 
-        notebook.Entries[key] = entry;
-        
+        notebook.Pages[page] = pageData;
+
         await _storageService.SaveNotebookAsync(notebook, cancellationToken);
-        
-        _logger.LogInformation("Successfully wrote entry '{Key}' to notebook '{NotebookName}'", key, notebookName);
+
+        _logger.LogInformation("Successfully wrote page '{Page}' to notebook '{NotebookName}'", page, notebookName);
     }
 
-    public async Task<bool> DeleteEntryAsync(string notebookName, string key, CancellationToken cancellationToken = default)
+    public async Task<bool> DeletePageAsync(string notebookName, string page, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(notebookName);
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        
-        _logger.LogInformation("Deleting entry '{Key}' from notebook '{NotebookName}'", key, notebookName);
-        
+        ArgumentException.ThrowIfNullOrWhiteSpace(page);
+
+        _logger.LogInformation("Deleting page '{Page}' from notebook '{NotebookName}'", page, notebookName);
+
         var notebook = await _storageService.LoadNotebookAsync(notebookName, cancellationToken);
-        
+
         if (notebook == null)
         {
             _logger.LogInformation("Notebook '{NotebookName}' not found, nothing to delete", notebookName);
             return false;
         }
 
-        if (!notebook.Entries.Remove(key))
+        if (!notebook.Pages.Remove(page))
         {
-            _logger.LogInformation("Entry '{Key}' not found in notebook '{NotebookName}'", key, notebookName);
+            _logger.LogInformation("Page '{Page}' not found in notebook '{NotebookName}'", page, notebookName);
             return false;
         }
 
         await _storageService.SaveNotebookAsync(notebook, cancellationToken);
-        
-        _logger.LogInformation("Successfully deleted entry '{Key}' from notebook '{NotebookName}'", key, notebookName);
+
+        _logger.LogInformation("Successfully deleted page '{Page}' from notebook '{NotebookName}'", page, notebookName);
         return true;
     }
 

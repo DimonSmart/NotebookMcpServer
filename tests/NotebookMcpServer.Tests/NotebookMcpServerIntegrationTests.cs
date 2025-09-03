@@ -58,80 +58,80 @@ public class NotebookMcpServerIntegrationTests : IDisposable
     {
         // Arrange
         const string notebookName = "integration-test-notebook";
-        const string testKey1 = "user-preference";
-        const string testValue1 = "dark-theme";
-        const string testKey2 = "last-login";
-        const string testValue2 = "2024-01-15T10:30:00Z";
-        const string updatedValue1 = "light-theme";
+        const string testPage1 = "user-preference";
+        const string testText1 = "dark-theme";
+        const string testPage2 = "last-login";
+        const string testText2 = "2024-01-15T10:30:00Z";
+        const string updatedText1 = "light-theme";
 
         // Act & Assert: CREATE operations
 
         // 1. View empty notebook (should return empty dictionary)
-        Dictionary<string, string> emptyNotebook = await _notebookTools.GetNotebookEntriesAsync(notebookName);
+        Dictionary<string, string> emptyNotebook = await _notebookTools.GetNotebookPagesAsync(notebookName);
         Assert.NotNull(emptyNotebook);
         Assert.Empty(emptyNotebook);
 
-        // 2. Write first entry
-        string writeResult1 = await _notebookTools.UpsertEntryAsync(notebookName, testKey1, testValue1);
+        // 2. Write first page
+        string writeResult1 = await _notebookTools.UpsertPageAsync(notebookName, testPage1, testText1);
         Assert.Contains("has been upserted", writeResult1);
-        Assert.Contains(testKey1, writeResult1);
+        Assert.Contains(testPage1, writeResult1);
         Assert.Contains(notebookName, writeResult1);
 
-        // 2a. Read first entry
-        string readValue1 = await _notebookTools.GetEntryAsync(notebookName, testKey1);
-        Assert.Equal(testValue1, readValue1);
+        // 2a. Read first page
+        string readText1 = await _notebookTools.GetPageTextAsync(notebookName, testPage1);
+        Assert.Equal(testText1, readText1);
 
-        // 3. Write second entry
-        string writeResult2 = await _notebookTools.UpsertEntryAsync(notebookName, testKey2, testValue2);
+        // 3. Write second page
+        string writeResult2 = await _notebookTools.UpsertPageAsync(notebookName, testPage2, testText2);
         Assert.Contains("has been upserted", writeResult2);
 
         // Act & Assert: READ operations
 
-        // 4. View notebook with entries
-        Dictionary<string, string> notebookWithEntries = await _notebookTools.GetNotebookEntriesAsync(notebookName);
-        Assert.NotNull(notebookWithEntries);
-        Assert.Equal(2, notebookWithEntries.Count);
-        Assert.Equal(testValue1, notebookWithEntries[testKey1]);
-        Assert.Equal(testValue2, notebookWithEntries[testKey2]);
+        // 4. View notebook with pages
+        Dictionary<string, string> notebookWithPages = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        Assert.NotNull(notebookWithPages);
+        Assert.Equal(2, notebookWithPages.Count);
+        Assert.Equal(testText1, notebookWithPages[testPage1]);
+        Assert.Equal(testText2, notebookWithPages[testPage2]);
 
         // Act & Assert: UPDATE operations
 
-        // 5. Update existing entry
-        string updateResult = await _notebookTools.UpsertEntryAsync(notebookName, testKey1, updatedValue1);
+        // 5. Update existing page
+        string updateResult = await _notebookTools.UpsertPageAsync(notebookName, testPage1, updatedText1);
         Assert.Contains("has been upserted", updateResult);
 
         // 6. Verify update
-        Dictionary<string, string> updatedNotebook = await _notebookTools.GetNotebookEntriesAsync(notebookName);
+        Dictionary<string, string> updatedNotebook = await _notebookTools.GetNotebookPagesAsync(notebookName);
         Assert.Equal(2, updatedNotebook.Count);
-        Assert.Equal(updatedValue1, updatedNotebook[testKey1]);
-        Assert.Equal(testValue2, updatedNotebook[testKey2]); // This should remain unchanged
+        Assert.Equal(updatedText1, updatedNotebook[testPage1]);
+        Assert.Equal(testText2, updatedNotebook[testPage2]); // This should remain unchanged
 
         // Act & Assert: DELETE operations
 
-        // 7. Delete one entry
-        bool deleteResult = await _notebookTools.RemoveEntryAsync(notebookName, testKey2);
+        // 7. Delete one page
+        bool deleteResult = await _notebookTools.RemovePageAsync(notebookName, testPage2);
         Assert.True(deleteResult);
 
         // 8. Verify deletion
-        Dictionary<string, string> notebookAfterDelete = await _notebookTools.GetNotebookEntriesAsync(notebookName);
+        Dictionary<string, string> notebookAfterDelete = await _notebookTools.GetNotebookPagesAsync(notebookName);
         Assert.Single(notebookAfterDelete);
-        Assert.Equal(updatedValue1, notebookAfterDelete[testKey1]);
-        Assert.False(notebookAfterDelete.ContainsKey(testKey2));
+        Assert.Equal(updatedText1, notebookAfterDelete[testPage1]);
+        Assert.False(notebookAfterDelete.ContainsKey(testPage2));
 
-        // 8a. Reading deleted entry returns empty
-        string deletedValue = await _notebookTools.GetEntryAsync(notebookName, testKey2);
-        Assert.Equal(string.Empty, deletedValue);
+        // 8a. Reading deleted page returns empty
+        string deletedText = await _notebookTools.GetPageTextAsync(notebookName, testPage2);
+        Assert.Equal(string.Empty, deletedText);
 
-        // 9. Try to delete non-existent entry
-        bool deleteNonExistentResult = await _notebookTools.RemoveEntryAsync(notebookName, "non-existent-key");
+        // 9. Try to delete non-existent page
+        bool deleteNonExistentResult = await _notebookTools.RemovePageAsync(notebookName, "non-existent-page");
         Assert.False(deleteNonExistentResult);
 
-        // 10. Delete the last entry
-        bool deleteLastResult = await _notebookTools.RemoveEntryAsync(notebookName, testKey1);
+        // 10. Delete the last page
+        bool deleteLastResult = await _notebookTools.RemovePageAsync(notebookName, testPage1);
         Assert.True(deleteLastResult);
 
         // 11. Verify notebook is empty but still exists
-        Dictionary<string, string> finalNotebook = await _notebookTools.GetNotebookEntriesAsync(notebookName);
+        Dictionary<string, string> finalNotebook = await _notebookTools.GetNotebookPagesAsync(notebookName);
         Assert.NotNull(finalNotebook);
         Assert.Empty(finalNotebook);
     }
@@ -142,22 +142,22 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         // Arrange
         const string notebook1 = "notebook-one";
         const string notebook2 = "notebook-two";
-        const string commonKey = "common-key";
-        const string value1 = "value-from-notebook-one";
-        const string value2 = "value-from-notebook-two";
+        const string commonPage = "common-page";
+        const string text1 = "text-from-notebook-one";
+        const string text2 = "text-from-notebook-two";
 
         // Act
-        await _notebookTools.UpsertEntryAsync(notebook1, commonKey, value1);
-        await _notebookTools.UpsertEntryAsync(notebook2, commonKey, value2);
+        await _notebookTools.UpsertPageAsync(notebook1, commonPage, text1);
+        await _notebookTools.UpsertPageAsync(notebook2, commonPage, text2);
 
         // Assert
-        Dictionary<string, string> notebook1Data = await _notebookTools.GetNotebookEntriesAsync(notebook1);
-        Dictionary<string, string> notebook2Data = await _notebookTools.GetNotebookEntriesAsync(notebook2);
+        Dictionary<string, string> notebook1Data = await _notebookTools.GetNotebookPagesAsync(notebook1);
+        Dictionary<string, string> notebook2Data = await _notebookTools.GetNotebookPagesAsync(notebook2);
 
         Assert.Single(notebook1Data);
         Assert.Single(notebook2Data);
-        Assert.Equal(value1, notebook1Data[commonKey]);
-        Assert.Equal(value2, notebook2Data[commonKey]);
+        Assert.Equal(text1, notebook1Data[commonPage]);
+        Assert.Equal(text2, notebook2Data[commonPage]);
     }
 
     [Fact]
@@ -165,52 +165,52 @@ public class NotebookMcpServerIntegrationTests : IDisposable
     {
         // Arrange
         const string notebookName = "large-data-test";
-        const int entriesCount = 100;
+        const int pagesCount = 100;
         Dictionary<string, string> testData = new();
 
         // Generate test data
-        for (int i = 0; i < entriesCount; i++)
+        for (int i = 0; i < pagesCount; i++)
         {
-            testData[$"key-{i:000}"] = $"value-{i:000}-{Guid.NewGuid()}";
+            testData[$"page-{i:000}"] = $"text-{i:000}-{Guid.NewGuid()}";
         }
 
-        // Act: Write all entries
-        foreach ((string key, string value) in testData)
+        // Act: Write all pages
+        foreach ((string page, string text) in testData)
         {
-            await _notebookTools.UpsertEntryAsync(notebookName, key, value);
+            await _notebookTools.UpsertPageAsync(notebookName, page, text);
         }
 
-        // Assert: Verify all entries were written correctly
-        Dictionary<string, string> notebookData = await _notebookTools.GetNotebookEntriesAsync(notebookName);
-        Assert.Equal(entriesCount, notebookData.Count);
+        // Assert: Verify all pages were written correctly
+        Dictionary<string, string> notebookData = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        Assert.Equal(pagesCount, notebookData.Count);
 
-        foreach ((string key, string expectedValue) in testData)
+        foreach ((string page, string expectedText) in testData)
         {
-            Assert.True(notebookData.ContainsKey(key), $"Key '{key}' not found in notebook");
-            Assert.Equal(expectedValue, notebookData[key]);
+            Assert.True(notebookData.ContainsKey(page), $"Page '{page}' not found in notebook");
+            Assert.Equal(expectedText, notebookData[page]);
         }
 
-        // Act: Delete half of the entries
-        List<string> keysToDelete = testData.Keys.Take(entriesCount / 2).ToList();
-        foreach (string? key in keysToDelete)
+        // Act: Delete half of the pages
+        List<string> pagesToDelete = testData.Keys.Take(pagesCount / 2).ToList();
+        foreach (string? page in pagesToDelete)
         {
-            bool deleteResult = await _notebookTools.RemoveEntryAsync(notebookName, key);
-            Assert.True(deleteResult, $"Failed to delete key '{key}'");
+            bool deleteResult = await _notebookTools.RemovePageAsync(notebookName, page);
+            Assert.True(deleteResult, $"Failed to delete page '{page}'");
         }
 
-        // Assert: Verify correct entries remain
-        Dictionary<string, string> finalNotebookData = await _notebookTools.GetNotebookEntriesAsync(notebookName);
-        Assert.Equal(entriesCount - keysToDelete.Count, finalNotebookData.Count);
+        // Assert: Verify correct pages remain
+        Dictionary<string, string> finalNotebookData = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        Assert.Equal(pagesCount - pagesToDelete.Count, finalNotebookData.Count);
 
-        foreach (string? deletedKey in keysToDelete)
+        foreach (string? deletedPage in pagesToDelete)
         {
-            Assert.False(finalNotebookData.ContainsKey(deletedKey), $"Deleted key '{deletedKey}' still exists");
+            Assert.False(finalNotebookData.ContainsKey(deletedPage), $"Deleted page '{deletedPage}' still exists");
         }
 
-        foreach (string? remainingKey in testData.Keys.Except(keysToDelete))
+        foreach (string? remainingPage in testData.Keys.Except(pagesToDelete))
         {
-            Assert.True(finalNotebookData.ContainsKey(remainingKey), $"Remaining key '{remainingKey}' is missing");
-            Assert.Equal(testData[remainingKey], finalNotebookData[remainingKey]);
+            Assert.True(finalNotebookData.ContainsKey(remainingPage), $"Remaining page '{remainingPage}' is missing");
+            Assert.Equal(testData[remainingPage], finalNotebookData[remainingPage]);
         }
     }
 
@@ -221,29 +221,29 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         const string notebookName = "special-chars-test";
         Dictionary<string, string> specialTestCases = new()
         {
-            ["unicode-key-🎯"] = "unicode-value-🚀",
-            ["json-like"] = """{"nested": "value", "array": [1, 2, 3]}""",
+            ["unicode-page-🎯"] = "unicode-text-🚀",
+            ["json-like"] = """{"nested": "text", "array": [1, 2, 3]}""",
             ["multiline"] = "Line 1\nLine 2\nLine 3",
             ["empty"] = "",
             ["whitespace"] = "  \t  ",
-            ["xml-like"] = "<root><item>value</item></root>",
+            ["xml-like"] = "<root><item>text</item></root>",
             ["special-chars"] = "!@#$%^&*()_+-=[]{}|;:,.<>?",
         };
 
         // Act & Assert
-        foreach ((string key, string value) in specialTestCases)
+        foreach ((string page, string text) in specialTestCases)
         {
-            string writeResult = await _notebookTools.UpsertEntryAsync(notebookName, key, value);
+            string writeResult = await _notebookTools.UpsertPageAsync(notebookName, page, text);
             Assert.Contains("has been upserted", writeResult);
         }
 
-        Dictionary<string, string> notebookData = await _notebookTools.GetNotebookEntriesAsync(notebookName);
+        Dictionary<string, string> notebookData = await _notebookTools.GetNotebookPagesAsync(notebookName);
         Assert.Equal(specialTestCases.Count, notebookData.Count);
 
-        foreach ((string key, string expectedValue) in specialTestCases)
+        foreach ((string page, string expectedText) in specialTestCases)
         {
-            Assert.True(notebookData.ContainsKey(key), $"Key '{key}' not found");
-            Assert.Equal(expectedValue, notebookData[key]);
+            Assert.True(notebookData.ContainsKey(page), $"Page '{page}' not found");
+            Assert.Equal(expectedText, notebookData[page]);
         }
     }
 
@@ -252,17 +252,17 @@ public class NotebookMcpServerIntegrationTests : IDisposable
     {
         const string notebookName = "unicode-test";
         const string description = "описание";
-        const string key = "ключ";
-        const string value = "значение";
+        const string page = "ключ";
+        const string text = "значение";
 
         await _notebookTools.CreateNotebookAsync(notebookName, description);
-        await _notebookTools.UpsertEntryAsync(notebookName, key, value);
+        await _notebookTools.UpsertPageAsync(notebookName, page, text);
 
         var filePath = Path.Combine(_testStorageDirectory, $"{notebookName}.json");
         var content = await File.ReadAllTextAsync(filePath);
 
         Assert.Contains(description, content);
-        Assert.Contains(value, content);
+        Assert.Contains(text, content);
         Assert.DoesNotContain("\\u", content);
     }
 
@@ -274,7 +274,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         const int concurrentTasks = 10;
         const int operationsPerTask = 20;
 
-        ConcurrentBag<string> writtenKeys = new();
+        ConcurrentBag<string> writtenPages = new();
 
         // Act: Run concurrent write operations
         List<Task> tasks = new();
@@ -285,11 +285,11 @@ public class NotebookMcpServerIntegrationTests : IDisposable
             {
                 for (int op = 0; op < operationsPerTask; op++)
                 {
-                    string key = $"task-{currentTaskId:00}-key-{op:00}";
-                    string value = $"task-{currentTaskId:00}-value-{op:00}-{DateTime.UtcNow:HH:mm:ss.fff}";
+                    string page = $"task-{currentTaskId:00}-page-{op:00}";
+                    string text = $"task-{currentTaskId:00}-text-{op:00}-{DateTime.UtcNow:HH:mm:ss.fff}";
 
-                    await _notebookTools.UpsertEntryAsync(notebookName, key, value);
-                    writtenKeys.Add(key);
+                    await _notebookTools.UpsertPageAsync(notebookName, page, text);
+                    writtenPages.Add(page);
 
                     // Add small random delay to increase chance of race conditions
                     await Task.Delay(Random.Shared.Next(1, 5));
@@ -299,31 +299,31 @@ public class NotebookMcpServerIntegrationTests : IDisposable
 
         await Task.WhenAll(tasks);
 
-        // Assert: Verify all entries were written correctly
-        Dictionary<string, string> finalNotebook = await _notebookTools.GetNotebookEntriesAsync(notebookName);
+        // Assert: Verify all pages were written correctly
+        Dictionary<string, string> finalNotebook = await _notebookTools.GetNotebookPagesAsync(notebookName);
         int expectedCount = concurrentTasks * operationsPerTask;
 
         // Note: Due to potential race conditions in the current implementation,
         // we'll be flexible with the exact count but verify data integrity
-        Assert.True(finalNotebook.Count > 0, "Should have some entries");
+        Assert.True(finalNotebook.Count > 0, "Should have some pages");
         Assert.True(finalNotebook.Count <= expectedCount, "Should not exceed expected count");
 
-        // Verify that all existing entries have the correct format and are unique
-        HashSet<string> uniqueKeys = new();
+        // Verify that all existing pages have the correct format and are unique
+        HashSet<string> uniquePages = new();
         foreach (KeyValuePair<string, string> kvp in finalNotebook)
         {
-            Assert.True(uniqueKeys.Add(kvp.Key), $"Duplicate key found: {kvp.Key}");
-            Assert.Matches(@"task-\d{2}-key-\d{2}", kvp.Key);
-            Assert.Matches(@"task-\d{2}-value-\d{2}-\d{2}:\d{2}:\d{2}\.\d{3}", kvp.Value);
+            Assert.True(uniquePages.Add(kvp.Key), $"Duplicate page found: {kvp.Key}");
+            Assert.Matches(@"task-\d{2}-page-\d{2}", kvp.Key);
+            Assert.Matches(@"task-\d{2}-text-\d{2}-\d{2}:\d{2}:\d{2}\.\d{3}", kvp.Value);
         }
 
         // Log information about what was actually saved vs expected
-        Console.WriteLine($"Expected: {expectedCount} entries, Actual: {finalNotebook.Count} entries");
+        Console.WriteLine($"Expected: {expectedCount} pages, Actual: {finalNotebook.Count} pages");
         if (finalNotebook.Count < expectedCount)
         {
-            List<string> writtenKeysList = writtenKeys.ToList();
-            List<string> missingKeys = writtenKeysList.Except(finalNotebook.Keys).Take(5).ToList();
-            Console.WriteLine($"Some entries may have been lost due to concurrent access. Sample missing keys: {string.Join(", ", missingKeys)}");
+            List<string> writtenPagesList = writtenPages.ToList();
+            List<string> missingPages = writtenPagesList.Except(finalNotebook.Keys).Take(5).ToList();
+            Console.WriteLine($"Some pages may have been lost due to concurrent access. Sample missing pages: {string.Join(", ", missingPages)}");
         }
     }
 
@@ -332,20 +332,20 @@ public class NotebookMcpServerIntegrationTests : IDisposable
     {
         // Arrange
         const string notebookName = "persistence-test";
-        const string testKey = "persistent-key";
-        const string testValue = "persistent-value";
+        const string testPage = "persistent-page";
+        const string testText = "persistent-text";
 
         // Act: Write data with first service instance
-        await _notebookTools.UpsertEntryAsync(notebookName, testKey, testValue);
+        await _notebookTools.UpsertPageAsync(notebookName, testPage, testText);
 
         // Simulate service restart by creating new service instances
         ServiceProvider newServiceProvider = CreateNewServiceProvider();
         NotebookTools newNotebookTools = newServiceProvider.GetRequiredService<NotebookTools>();
 
         // Assert: Data should still exist
-        Dictionary<string, string> restoredNotebook = await newNotebookTools.GetNotebookEntriesAsync(notebookName);
+        Dictionary<string, string> restoredNotebook = await newNotebookTools.GetNotebookPagesAsync(notebookName);
         Assert.Single(restoredNotebook);
-        Assert.Equal(testValue, restoredNotebook[testKey]);
+        Assert.Equal(testText, restoredNotebook[testPage]);
 
         // Cleanup
         newServiceProvider.Dispose();
@@ -444,8 +444,8 @@ internal class TestFileNotebookStorageService : INotebookStorageService, IDispos
             Notebook? notebook = await JsonSerializer.DeserializeAsync<Notebook>(stream, JsonOptions, cancellationToken);
 
             _logger.LogDebug(
-                "Successfully loaded notebook '{NotebookName}' with {EntryCount} entries",
-                notebookName, notebook?.Entries.Count ?? 0);
+                "Successfully loaded notebook '{NotebookName}' with {PageCount} pages",
+                notebookName, notebook?.Pages.Count ?? 0);
 
             return notebook;
         }
@@ -485,8 +485,8 @@ internal class TestFileNotebookStorageService : INotebookStorageService, IDispos
             await stream.FlushAsync(cancellationToken);
 
             _logger.LogDebug(
-                "Successfully saved notebook '{NotebookName}' with {EntryCount} entries",
-                notebook.Name, notebook.Entries.Count);
+                "Successfully saved notebook '{NotebookName}' with {PageCount} pages",
+                notebook.Name, notebook.Pages.Count);
         }
         catch (Exception ex)
         {

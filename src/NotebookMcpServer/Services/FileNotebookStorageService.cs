@@ -61,8 +61,8 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
             var notebook = await JsonSerializer.DeserializeAsync<Notebook>(stream, JsonOptions, cancellationToken);
 
             _logger.LogDebug(
-                "Successfully loaded notebook '{NotebookName}' with {EntryCount} entries",
-                notebookName, notebook?.Entries.Count ?? 0);
+                "Successfully loaded notebook '{NotebookName}' with {PageCount} pages",
+                notebookName, notebook?.Pages.Count ?? 0);
 
             return notebook;
         }
@@ -101,8 +101,8 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
             await stream.FlushAsync(cancellationToken);
 
             _logger.LogDebug(
-                "Successfully saved notebook '{NotebookName}' with {EntryCount} entries",
-                notebook.Name, notebook.Entries.Count);
+                "Successfully saved notebook '{NotebookName}' with {PageCount} pages",
+                notebook.Name, notebook.Pages.Count);
         }
         catch (Exception ex)
         {

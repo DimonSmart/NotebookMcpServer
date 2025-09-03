@@ -85,7 +85,6 @@ public class NotebookService : INotebookService
         var now = DateTime.UtcNow;
         var pageData = new NotebookPage
         {
-            Page = page,
             Text = text,
             CreatedAt = notebook.Pages.ContainsKey(page) ? notebook.Pages[page].CreatedAt : now,
             ModifiedAt = now

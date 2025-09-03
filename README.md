@@ -96,7 +96,6 @@ The JSON structure includes:
   "Name": "my-notebook",
   "Pages": {
     "page1": {
-      "Page": "page1",
       "Text": "text1",
       "CreatedAt": "2024-01-15T10:30:00Z",
       "ModifiedAt": "2024-01-15T10:30:00Z"
@@ -106,6 +105,7 @@ The JSON structure includes:
   "ModifiedAt": "2024-01-15T10:30:00Z"
 }
 ```
+Page names appear as keys under `Pages` and are not repeated inside each entry.
 
 ## Building and Running
 

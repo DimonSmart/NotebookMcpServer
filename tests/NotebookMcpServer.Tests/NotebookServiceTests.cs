@@ -8,15 +8,15 @@ namespace NotebookMcpServer.Tests;
 public class NotebookServiceTests
 {
     private static readonly ILoggerFactory LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(builder => builder.AddConsole());
-    
+
     private (INotebookStorageService storageService, NotebookService notebookService) CreateServices()
     {
         var serviceLogger = LoggerFactory.CreateLogger<NotebookService>();
-        
+
         // Create an in-memory storage service for testing
         var storageService = new InMemoryNotebookStorageService();
         var notebookService = new NotebookService(storageService, serviceLogger);
-        
+
         return (storageService, notebookService);
     }
 
@@ -24,7 +24,7 @@ public class NotebookServiceTests
     public async Task ViewNotebookAsync_NewNotebook_ReturnsEmptyDictionary()
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Act
         var result = await notebookService.ViewNotebookAsync("nonexistent");
 
@@ -71,7 +71,7 @@ public class NotebookServiceTests
     public async Task WritePageAsync_NewNotebook_CreatesNotebookAndPage()
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Arrange
         const string notebookName = "test-notebook";
         const string page = "test-page";
@@ -90,7 +90,7 @@ public class NotebookServiceTests
     public async Task WritePageAsync_ExistingPage_UpdatesPage()
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Arrange
         const string notebookName = "test-notebook";
         const string page = "test-page";
@@ -111,7 +111,7 @@ public class NotebookServiceTests
     public async Task DeletePageAsync_ExistingPage_DeletesPageAndReturnsTrue()
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Arrange
         const string notebookName = "test-notebook";
         const string page = "test-page";
@@ -132,7 +132,7 @@ public class NotebookServiceTests
     public async Task DeletePageAsync_NonExistentPage_ReturnsFalse()
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Arrange
         const string notebookName = "test-notebook";
         const string page = "nonexistent-page";
@@ -148,7 +148,7 @@ public class NotebookServiceTests
     public async Task DeletePageAsync_NonExistentNotebook_ReturnsFalse()
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Arrange
         const string notebookName = "nonexistent-notebook";
         const string page = "test-page";
@@ -164,7 +164,7 @@ public class NotebookServiceTests
     public async Task WritePageAsync_MultiplePages_StoresAllPages()
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Arrange
         const string notebookName = "test-notebook";
         var pages = new Dictionary<string, string>
@@ -216,7 +216,7 @@ public class NotebookServiceTests
     public async Task WritePageAsync_NullNotebookName_ThrowsArgumentException()
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(
             () => notebookService.WritePageAsync(null!, "page", "text"));
@@ -228,7 +228,7 @@ public class NotebookServiceTests
     public async Task WritePageAsync_InvalidNotebookName_ThrowsArgumentException(string invalidName)
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
             () => notebookService.WritePageAsync(invalidName, "page", "text"));
@@ -238,7 +238,7 @@ public class NotebookServiceTests
     public async Task WritePageAsync_NullPage_ThrowsArgumentException()
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(
             () => notebookService.WritePageAsync("notebook", null!, "text"));
@@ -250,7 +250,7 @@ public class NotebookServiceTests
     public async Task WritePageAsync_InvalidPage_ThrowsArgumentException(string invalidPage)
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
             () => notebookService.WritePageAsync("notebook", invalidPage, "text"));
@@ -260,7 +260,7 @@ public class NotebookServiceTests
     public async Task WritePageAsync_NullText_TreatedAsEmptyString()
     {
         var (storageService, notebookService) = CreateServices();
-        
+
         // Arrange
         const string notebookName = "test-notebook";
         const string page = "test-page";

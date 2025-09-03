@@ -14,14 +14,14 @@ public interface INotebookStorageService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The notebook if found, null otherwise</returns>
     Task<Notebook?> LoadNotebookAsync(string notebookName, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Save a notebook
     /// </summary>
     /// <param name="notebook">The notebook to save</param>
     /// <param name="cancellationToken">Cancellation token</param>
     Task SaveNotebookAsync(Notebook notebook, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Check if a notebook exists
     /// </summary>

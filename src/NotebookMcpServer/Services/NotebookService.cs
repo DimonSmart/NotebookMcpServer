@@ -21,9 +21,9 @@ public class NotebookService : INotebookService
     public async Task<Dictionary<string, string>> ViewNotebookAsync(string notebookName, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(notebookName);
-        
+
         _logger.LogInformation("Viewing notebook '{NotebookName}'", notebookName);
-        
+
         var notebook = await _storageService.LoadNotebookAsync(notebookName, cancellationToken);
 
         if (notebook == null)

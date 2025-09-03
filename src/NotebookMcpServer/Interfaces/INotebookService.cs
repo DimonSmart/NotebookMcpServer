@@ -23,7 +23,7 @@ public interface INotebookService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Page text or empty string if not found</returns>
     Task<string> GetPageAsync(string notebookName, string page, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Write or update a page in a notebook
     /// </summary>
@@ -32,7 +32,7 @@ public interface INotebookService
     /// <param name="text">Page text</param>
     /// <param name="cancellationToken">Cancellation token</param>
     Task WritePageAsync(string notebookName, string page, string text, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Delete a page from a notebook
     /// </summary>

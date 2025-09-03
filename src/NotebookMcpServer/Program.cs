@@ -1,6 +1,5 @@
 namespace NotebookMcpServer;
 
-using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using NotebookMcpServer.Interfaces;
 using NotebookMcpServer.Services;
 using NotebookMcpServer.Tools;
+using System.Reflection;
 
 /// <summary>
 /// Main program class for the Notebook MCP Server.
@@ -76,7 +76,7 @@ internal sealed class Program
     private static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
         var configuration = context.Configuration;
-        
+
         // Get storage directory from configuration or environment variable
         var storageDir = configuration["Storage:Directory"] ??
                          Environment.GetEnvironmentVariable("NOTEBOOK_STORAGE_DIRECTORY") ??

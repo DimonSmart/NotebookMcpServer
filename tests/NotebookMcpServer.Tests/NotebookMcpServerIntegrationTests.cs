@@ -67,7 +67,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         // Act & Assert: CREATE operations
 
         // 1. View empty notebook (should return empty summary)
-        NotebookSummary emptyNotebook = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        NotebookSummary emptyNotebook = await _notebookTools.GetNotebookPageNamesAsync(notebookName);
         Assert.NotNull(emptyNotebook);
         Assert.Empty(emptyNotebook.Pages);
 
@@ -88,7 +88,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         // Act & Assert: READ operations
 
         // 4. View notebook with pages
-        NotebookSummary notebookWithPages = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        NotebookSummary notebookWithPages = await _notebookTools.GetNotebookPageNamesAsync(notebookName);
         Assert.NotNull(notebookWithPages);
         Assert.Equal(2, notebookWithPages.Pages.Count);
         Assert.Contains(testPage1, notebookWithPages.Pages);
@@ -105,7 +105,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         Assert.Contains("has been upserted", updateResult);
 
         // 6. Verify update
-        NotebookSummary updatedNotebook = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        NotebookSummary updatedNotebook = await _notebookTools.GetNotebookPageNamesAsync(notebookName);
         Assert.Equal(2, updatedNotebook.Pages.Count);
         Assert.Contains(testPage1, updatedNotebook.Pages);
         Assert.Contains(testPage2, updatedNotebook.Pages);
@@ -121,7 +121,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         Assert.True(deleteResult);
 
         // 8. Verify deletion
-        NotebookSummary notebookAfterDelete = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        NotebookSummary notebookAfterDelete = await _notebookTools.GetNotebookPageNamesAsync(notebookName);
         Assert.Single(notebookAfterDelete.Pages);
         Assert.Contains(testPage1, notebookAfterDelete.Pages);
         string remainingText = await _notebookTools.GetPageTextAsync(notebookName, testPage1);
@@ -141,7 +141,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         Assert.True(deleteLastResult);
 
         // 11. Verify notebook is empty but still exists
-        NotebookSummary finalNotebook = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        NotebookSummary finalNotebook = await _notebookTools.GetNotebookPageNamesAsync(notebookName);
         Assert.NotNull(finalNotebook);
         Assert.Empty(finalNotebook.Pages);
     }
@@ -161,8 +161,8 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         await _notebookTools.UpsertPageAsync(notebook2, commonPage, text2);
 
         // Assert
-        NotebookSummary notebook1Data = await _notebookTools.GetNotebookPagesAsync(notebook1);
-        NotebookSummary notebook2Data = await _notebookTools.GetNotebookPagesAsync(notebook2);
+        NotebookSummary notebook1Data = await _notebookTools.GetNotebookPageNamesAsync(notebook1);
+        NotebookSummary notebook2Data = await _notebookTools.GetNotebookPageNamesAsync(notebook2);
 
         Assert.Single(notebook1Data.Pages);
         Assert.Single(notebook2Data.Pages);
@@ -191,7 +191,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         }
 
         // Assert: Verify all pages were written correctly
-        NotebookSummary notebookData = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        NotebookSummary notebookData = await _notebookTools.GetNotebookPageNamesAsync(notebookName);
         Assert.Equal(pagesCount, notebookData.Pages.Count);
 
         foreach ((string page, string expectedText) in testData)
@@ -210,7 +210,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         }
 
         // Assert: Verify correct pages remain
-        NotebookSummary finalNotebookData = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        NotebookSummary finalNotebookData = await _notebookTools.GetNotebookPageNamesAsync(notebookName);
         Assert.Equal(pagesCount - pagesToDelete.Count, finalNotebookData.Pages.Count);
 
         foreach (string? deletedPage in pagesToDelete)
@@ -249,7 +249,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
             Assert.Contains("has been upserted", writeResult);
         }
 
-        NotebookSummary notebookData = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        NotebookSummary notebookData = await _notebookTools.GetNotebookPageNamesAsync(notebookName);
         Assert.Equal(specialTestCases.Count, notebookData.Pages.Count);
 
         foreach ((string page, string expectedText) in specialTestCases)
@@ -326,7 +326,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         await Task.WhenAll(tasks);
 
         // Assert: Verify all pages were written correctly
-        NotebookSummary finalNotebook = await _notebookTools.GetNotebookPagesAsync(notebookName);
+        NotebookSummary finalNotebook = await _notebookTools.GetNotebookPageNamesAsync(notebookName);
         int expectedCount = concurrentTasks * operationsPerTask;
 
         // Note: Due to potential race conditions in the current implementation,
@@ -370,7 +370,7 @@ public class NotebookMcpServerIntegrationTests : IDisposable
         NotebookTools newNotebookTools = newServiceProvider.GetRequiredService<NotebookTools>();
 
         // Assert: Data should still exist
-        NotebookSummary restoredNotebook = await newNotebookTools.GetNotebookPagesAsync(notebookName);
+        NotebookSummary restoredNotebook = await newNotebookTools.GetNotebookPageNamesAsync(notebookName);
         Assert.Single(restoredNotebook.Pages);
         string readText = await newNotebookTools.GetPageTextAsync(notebookName, testPage);
         Assert.Equal(testText, readText);

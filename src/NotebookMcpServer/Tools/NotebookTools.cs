@@ -22,7 +22,7 @@ public class NotebookTools
     [McpServerTool(Name = "create_notebook")]
     [Description("Create a notebook or update its description.")]
     public async Task<string> CreateNotebookAsync(
-        [Description("Exact name of the notebook (case‑sensitive, non-empty).")]
+        [Description("Name of the notebook (case-insensitive, non-empty).")]
         string notebookName,
         [Description("Description to store for the notebook.")]
         string description)
@@ -40,12 +40,12 @@ public class NotebookTools
     /// <summary>
     /// Returns all pages of the specified notebook as a dictionary (page → text).
     /// </summary>
-    /// <param name="notebookName">Exact name of the target notebook (case‑sensitive, non-empty).</param>
+    /// <param name="notebookName">Name of the target notebook (case-insensitive, non-empty).</param>
     /// <returns>A dictionary of current pages in the notebook.</returns>
     [McpServerTool(Name = "get_notebook_pages")]
     [Description("List all pages in the specified notebook.")]
     public async Task<Dictionary<string, string>> GetNotebookPagesAsync(
-            [Description("Exact name of the notebook to read (case‑sensitive, non-empty).")]
+            [Description("Name of the notebook to read (case-insensitive, non-empty).")]
             string notebookName)
     {
         if (string.IsNullOrWhiteSpace(notebookName))
@@ -59,13 +59,13 @@ public class NotebookTools
     /// <summary>
     /// Returns the text of a single page from the specified notebook.
     /// </summary>
-    /// <param name="notebookName">Exact name of the target notebook (case‑sensitive, non-empty).</param>
+    /// <param name="notebookName">Name of the target notebook (case-insensitive, non-empty).</param>
     /// <param name="page">Page name to read (non-empty).</param>
     /// <returns>Text of the page or an empty string if not found.</returns>
     [McpServerTool(Name = "get_page_text")]
     [Description("Read a single page from a notebook.")]
     public async Task<string> GetPageTextAsync(
-        [Description("Exact name of the notebook to read (case‑sensitive, non-empty).")]
+        [Description("Name of the notebook to read (case-insensitive, non-empty).")]
             string notebookName,
         [Description("Page to read from the notebook (non-empty string).")]
             string page)
@@ -86,14 +86,14 @@ public class NotebookTools
     /// <summary>
     /// Creates or overwrites a single page in the specified notebook.
     /// </summary>
-    /// <param name="notebookName">Exact name of the target notebook (case‑sensitive, non-empty).</param>
+    /// <param name="notebookName">Name of the target notebook (case-insensitive, non-empty).</param>
     /// <param name="page">Page name (non-empty; unique within the notebook). Existing text will be overwritten.</param>
     /// <param name="text">Text to store for the page (string, stored verbatim; null is not allowed).</param>
     /// <returns>Operation status as a short human-readable message.</returns>
     [McpServerTool(Name = "upsert_page")]
     [Description("Create or update a page in a notebook.")]
     public async Task<string> UpsertPageAsync(
-        [Description("Exact name of the target notebook (case‑sensitive, non-empty).")]
+        [Description("Name of the target notebook (case-insensitive, non-empty).")]
         string notebookName,
         [Description("Page to create or update (non-empty string). Existing text will be overwritten.")]
         string page,
@@ -122,13 +122,13 @@ public class NotebookTools
     /// <summary>
     /// Deletes a single page from the specified notebook.
     /// </summary>
-    /// <param name="notebookName">Exact name of the target notebook (case‑sensitive, non-empty).</param>
+    /// <param name="notebookName">Name of the target notebook (case-insensitive, non-empty).</param>
     /// <param name="page">Page name to delete (non-empty).</param>
     /// <returns><c>true</c> if the page existed and was deleted; otherwise <c>false</c>.</returns>
     [McpServerTool(Name = "remove_page")]
     [Description("Delete a single page from a notebook. Returns true if deleted, false if not found.")]
     public async Task<bool> RemovePageAsync(
-        [Description("Exact name of the target notebook (case‑sensitive, non-empty).")]
+        [Description("Name of the target notebook (case-insensitive, non-empty).")]
         string notebookName,
         [Description("Page to delete from the notebook (non-empty string).")]
         string page)

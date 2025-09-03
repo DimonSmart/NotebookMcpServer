@@ -273,12 +273,35 @@ public class NotebookServiceTests
         Assert.Single(result);
         Assert.Equal("", result[page]);
     }
+
+    [Fact]
+    public async Task NotebookName_IsCaseInsensitiveAcrossOperations()
+    {
+        var (_, notebookService) = CreateServices();
+
+        await notebookService.CreateNotebookAsync("Book", "desc");
+        await notebookService.WritePageAsync("book", "Page", "text");
+
+        var text = await notebookService.GetPageAsync("BOOK", "page");
+        Assert.Equal("text", text);
+    }
+
+    [Fact]
+    public async Task PageName_IsCaseInsensitive()
+    {
+        var (_, notebookService) = CreateServices();
+
+        await notebookService.WritePageAsync("book", "Page", "text");
+
+        var text = await notebookService.GetPageAsync("book", "page");
+        Assert.Equal("text", text);
+    }
 }
 
 // Test-specific implementation that works in memory
 internal class InMemoryNotebookStorageService : INotebookStorageService
 {
-    private readonly Dictionary<string, Notebook> _notebooks = new();
+    private readonly Dictionary<string, Notebook> _notebooks = new(StringComparer.OrdinalIgnoreCase);
 
     public Task<Notebook?> LoadNotebookAsync(string notebookName, CancellationToken cancellationToken = default)
     {

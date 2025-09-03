@@ -34,7 +34,10 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
 
     private string GetNotebookFilePath(string notebookName)
     {
-        var safeNotebookName = string.Join("_", notebookName.Split(Path.GetInvalidFileNameChars()));
+        var safeNotebookName = string.Join(
+            "_",
+            notebookName.Split(Path.GetInvalidFileNameChars()))
+            .ToLowerInvariant();
         return Path.Combine(_baseDirectory, $"{safeNotebookName}.json");
     }
 
@@ -59,6 +62,15 @@ public class FileNotebookStorageService : INotebookStorageService, IDisposable
 
             await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var notebook = await JsonSerializer.DeserializeAsync<Notebook>(stream, JsonOptions, cancellationToken);
+            if (notebook != null)
+            {
+                notebook = notebook with
+                {
+                    Pages = new Dictionary<string, NotebookPage>(
+                        notebook.Pages,
+                        StringComparer.OrdinalIgnoreCase)
+                };
+            }
 
             _logger.LogDebug(
                 "Successfully loaded notebook '{NotebookName}' with {PageCount} pages",

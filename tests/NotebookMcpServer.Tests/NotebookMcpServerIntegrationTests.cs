@@ -267,6 +267,19 @@ public class NotebookMcpServerIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task NotebookAndPageNames_AreCaseInsensitive()
+    {
+        const string notebookName = "CaseNotebook";
+        const string page = "SamplePage";
+        const string text = "data";
+
+        await _notebookTools.CreateNotebookAsync(notebookName, "desc");
+        await _notebookTools.UpsertPageAsync(notebookName.ToLower(), page, text);
+        string read = await _notebookTools.GetPageTextAsync(notebookName.ToUpper(), page.ToLower());
+        Assert.Equal(text, read);
+    }
+
+    [Fact]
     public async Task ConcurrentOperations_ShouldBeSafe()
     {
         // Arrange
@@ -419,7 +432,8 @@ internal class TestFileNotebookStorageService : INotebookStorageService, IDispos
 
     private string GetNotebookFilePath(string notebookName)
     {
-        string safeNotebookName = string.Join("_", notebookName.Split(Path.GetInvalidFileNameChars()));
+        string safeNotebookName = string.Join("_", notebookName.Split(Path.GetInvalidFileNameChars()))
+            .ToLowerInvariant();
         return Path.Combine(_baseDirectory, $"{safeNotebookName}.json");
     }
 
@@ -442,6 +456,15 @@ internal class TestFileNotebookStorageService : INotebookStorageService, IDispos
 
             await using FileStream stream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
             Notebook? notebook = await JsonSerializer.DeserializeAsync<Notebook>(stream, JsonOptions, cancellationToken);
+            if (notebook != null)
+            {
+                notebook = notebook with
+                {
+                    Pages = new Dictionary<string, NotebookPage>(
+                        notebook.Pages,
+                        StringComparer.OrdinalIgnoreCase)
+                };
+            }
 
             _logger.LogDebug(
                 "Successfully loaded notebook '{NotebookName}' with {PageCount} pages",

@@ -43,7 +43,7 @@ public class NotebookTools
     /// </summary>
     /// <param name="notebookName">Name of the target notebook (case-insensitive, non-empty).</param>
     /// <returns>Notebook summary.</returns>
-    [McpServerTool(Name = "get_notebook_page_names")]
+    [McpServerTool(Name = "get_notebook_page_names", UseStructuredContent = true)]
     [Description("Get notebook description and page names without page text.")]
     public async Task<NotebookSummary> GetNotebookPageNamesAsync(
             [Description("Name of the notebook to read (case-insensitive, non-empty).")]
@@ -126,7 +126,7 @@ public class NotebookTools
     /// <param name="notebookName">Name of the target notebook (case-insensitive, non-empty).</param>
     /// <param name="page">Page name to delete (non-empty).</param>
     /// <returns><c>true</c> if the page existed and was deleted; otherwise <c>false</c>.</returns>
-    [McpServerTool(Name = "remove_page")]
+    [McpServerTool(Name = "remove_page", UseStructuredContent = true)]
     [Description("Delete a single page from a notebook. Returns true if deleted, false if not found.")]
     public async Task<bool> RemovePageAsync(
         [Description("Name of the target notebook (case-insensitive, non-empty).")]

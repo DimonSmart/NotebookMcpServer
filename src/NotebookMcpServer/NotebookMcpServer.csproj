@@ -5,11 +5,44 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyTitle>Notebook MCP Server</AssemblyTitle>
-    <AssemblyDescription>Model Context Protocol server for managing notebooks with pages of text, built with MCPSharp v1.0.11</AssemblyDescription>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+
+    <!-- NuGet MCP Server as .NET Tool -->
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>notebook-mcp</ToolCommandName>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <!-- Metadata -->
+    <PackageId>DimonSmart.NotebookMcpServer</PackageId>
+    <Title>DimonSmart.NotebookMcpServer</Title>
+    <Description>Model Context Protocol server for managing notebooks with pages of text (stdio). Built with MCPSharp.</Description>
+    <Authors>DimonSmart</Authors>
+    <Company>DimonSmart</Company>
+    <PackageProjectUrl>https://github.com/DimonSmart/NotebookMcpServer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/DimonSmart/NotebookMcpServer</RepositoryUrl>
+    <PackageIcon>NotebookMcpServerIcon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>0BSD</PackageLicenseExpression>
+    <PackageTags>mcp;mcpserver;stdio;notebook;dotnet-tool</PackageTags>
+
+    <!-- MCP Server -->
+    <PackageType>McpServer</PackageType>
+
+    <!-- Version -->
+    <PackageVersion>1.$([System.DateTime]::UtcNow.ToString("yyMdd")).$([System.DateTime]::UtcNow.ToString("HHmm"))</PackageVersion>
+    <Version>1.$([System.DateTime]::UtcNow.ToString("yyMdd")).$([System.DateTime]::UtcNow.ToString("HHmm"))</Version>
+
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- MCP Manifest -->
+    <None Include=".mcp/server.json" Pack="true" PackagePath="/.mcp/" />
+    <!-- Icon and README -->
+    <None Include="NotebookMcpServerIcon.png" Pack="true" PackagePath="/" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ModelContextProtocol" Version="0.3.0-preview.4" />

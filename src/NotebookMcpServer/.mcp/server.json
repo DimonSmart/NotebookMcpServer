@@ -1,0 +1,23 @@
+{
+  "name": "DimonSmart.NotebookMcpServer",
+  "description": "Notebook MCP Server (stdio) for working with notebooks/pages.",
+  "packages": [
+    {
+      "registry_name": "nuget",
+      "name": "DimonSmart.NotebookMcpServer",
+      "version": "1.0.0"
+    }
+  ],
+  "environment_variables": [
+    {
+      "name": "NOTEBOOK_STORAGE_DIRECTORY",
+      "description": "Notebook storage directory",
+      "is_required": false,
+      "is_secret": false
+    }
+  ],
+  "repository": {
+    "url": "https://github.com/DimonSmart/NotebookMcpServer",
+    "source": "github"
+  }
+}

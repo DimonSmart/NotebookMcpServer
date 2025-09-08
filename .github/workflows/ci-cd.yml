@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     name: Build and Test
     
     steps:
@@ -52,15 +52,11 @@ jobs:
         name: build-artifacts
         path: ./artifacts
 
-  publish-binaries:
+  publish-nuget-package:
     if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
     needs: build-and-test
-    runs-on: ubuntu-latest
-    name: Publish Release Binaries
-    
-    strategy:
-      matrix:
-        runtime: ['win-x64', 'linux-x64', 'linux-arm64', 'osx-x64', 'osx-arm64']
+    runs-on: windows-latest
+    name: Publish NuGet Package
     
     steps:
     - uses: actions/checkout@v4
@@ -70,56 +66,35 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Publish ${{ matrix.runtime }}
-      run: |
-        dotnet publish src/NotebookMcpServer/NotebookMcpServer.csproj \
-          --configuration Release \
-          --runtime ${{ matrix.runtime }} \
-          --self-contained true \
-          --output ./publish/${{ matrix.runtime }} \
-          /p:PublishSingleFile=true \
-          /p:PublishTrimmed=false \
-          /p:DebugType=None \
-          /p:DebugSymbols=false
+    - name: Pack NuGet package
+      run: dotnet pack src/NotebookMcpServer/NotebookMcpServer.csproj --configuration Release --output ./package
 
-    - name: Create release archive
-      run: |
-        cd ./publish/${{ matrix.runtime }}
-        if [[ "${{ matrix.runtime }}" == win-* ]]; then
-          zip -r "../../NotebookMcpServer-${{ matrix.runtime }}.zip" .
-        else
-          tar -czf "../../NotebookMcpServer-${{ matrix.runtime }}.tar.gz" .
-        fi
-
-    - name: Upload release binaries
+    - name: Upload NuGet package
       uses: actions/upload-artifact@v4
       with:
-        name: NotebookMcpServer-${{ matrix.runtime }}
-        path: NotebookMcpServer-${{ matrix.runtime }}.*
+        name: nuget-package
+        path: ./package/*.nupkg
 
   create-release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-and-test, publish-binaries]
-    runs-on: ubuntu-latest
+    needs: [build-and-test, publish-nuget-package]
+    runs-on: windows-latest
     name: Create GitHub Release
     
     steps:
     - uses: actions/checkout@v4
 
-    - name: Download all artifacts
+    - name: Download NuGet package
       uses: actions/download-artifact@v4
       with:
-        path: ./artifacts
+        name: nuget-package
+        path: ./package
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ./artifacts/NotebookMcpServer-win-x64/NotebookMcpServer-win-x64.zip
-          ./artifacts/NotebookMcpServer-linux-x64/NotebookMcpServer-linux-x64.tar.gz
-          ./artifacts/NotebookMcpServer-linux-arm64/NotebookMcpServer-linux-arm64.tar.gz
-          ./artifacts/NotebookMcpServer-osx-x64/NotebookMcpServer-osx-x64.tar.gz
-          ./artifacts/NotebookMcpServer-osx-arm64/NotebookMcpServer-osx-arm64.tar.gz
+          ./package/*.nupkg
         generate_release_notes: true
         draft: false
         prerelease: false
